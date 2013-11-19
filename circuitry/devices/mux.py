@@ -10,9 +10,12 @@ from sympy.logic import *
 from circuitry.devices import Device
 
 
-class Mux(Device):
+class DeviceMux(Device):
+
+    mandatory_signals = ('strobe_signals', 'address_signals', 'data_signals')
+
     def __init__(self, **kwargs):
-        super(Mux, self).__init__(**kwargs)
+        super(DeviceMux, self).__init__(**kwargs)
         self._create_truth_table()
 
     def _create_truth_table(self):
@@ -25,7 +28,6 @@ class Mux(Device):
                     yield 1
         strobe_formula = SOPform(self.strobe_signals,
                                  [[self.strobe_signals_subs[str(_name)] for _name in self.strobe_signals]])
-        print strobe_formula
         address_and_data_minterms = list()
         address_and_data_exludes = list()
         for i in range(0, 2 ** len(self.address_signals)):
@@ -40,11 +42,3 @@ class Mux(Device):
                 address_and_data_exludes.append(address_line + data_line)
         address_and_data_formula = SOPform(self.address_signals + self.data_signals,
                                            address_and_data_minterms, dontcares=address_and_data_exludes)
-        print address_and_data_formula
-        print self.address_signals
-
-    def truth_table(self):
-        return
-
-    def formula(self):
-        return
