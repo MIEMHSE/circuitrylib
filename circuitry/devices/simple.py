@@ -10,7 +10,7 @@ from circuitry.devices import Device
 class DeviceSimple(Device):
 
     logic_function = None
-    mandatory_signals = ('data_signals',)
+    mandatory_signals = ('data_signals', 'output_signals',)
 
     def __init__(self, **kwargs):
         super(DeviceSimple, self).__init__(**kwargs)
