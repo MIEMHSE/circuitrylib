@@ -22,7 +22,7 @@ Alternatively use `pip`:
 
 ## Getting the code
 
-The code is hosted at [Github](https://github.com/profitware/circuitrylib).
+The code is hosted at [GitHub](https://github.com/profitware/circuitrylib).
 
 Check out the latest development version anonymously with:
 
