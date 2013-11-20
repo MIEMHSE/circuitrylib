@@ -15,6 +15,7 @@ class DeviceMux(Device):
 
     mandatory_signals = ('strobe_signals', 'address_signals', 'data_signals', 'output_signals',)
     mandatory_signals_using_subs = ('strobe_signals', 'output_signals',)
+    truth_table_signals = ('strobe_signals', 'address_signals', 'data_signals', 'output_signals',)
 
     def __init__(self, **kwargs):
         super(DeviceMux, self).__init__(**kwargs)
