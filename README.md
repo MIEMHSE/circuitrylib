@@ -37,7 +37,7 @@ The library provides classes for circuitry elements: basic digital logic gates a
 
 *Multiplexer example:*
 
-First import necessary modules
+First import necessary modules:
 ```
 >>> from circuitry.devices.mux import DeviceMux
 >>> from circuitry.latex.mux import DeviceMuxTruthTable
@@ -45,8 +45,12 @@ First import necessary modules
 
 To create multiplexer device with two strobe signal slots, three address signal slots, eight data signal slots and one output signal slot:
 ```
->>> device_mux = DeviceMux(strobe_signals='v:2', address_signals='a:3', data_signals='d:8', output_signals='y:1',
-                           strobe_signals_subs=dict(v0=1, v1=0), output_signals_subs=dict(y0=1))
+>>> device_mux = DeviceMux(strobe_signals='v:2',
+                           address_signals='a:3',
+                           data_signals='d:8',
+                           output_signals='y:1',
+                           strobe_signals_subs=dict(v0=1, v1=0),
+                           output_signals_subs=dict(y0=1))
 ```
 
 To create truth table for multiplexer and output it to LaTeX:
