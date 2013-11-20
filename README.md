@@ -1,6 +1,6 @@
 # CircuitryLib
 
-**A Python library for creating, modelling various сircuit engineering system.**
+**A Python library for creating and modelling various сircuit engineering system.**
 
 Author: The Profitware Group <S.Sobko@profitware.ru>
 
