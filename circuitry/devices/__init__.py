@@ -12,7 +12,6 @@ from circuitry.exceptions import SignalsNotSpecified, SignalsSubsNotSpecified
 
 
 class Device(dict):
-
     mandatory_signals = None
     mandatory_signals_using_subs = None
 
@@ -43,9 +42,9 @@ class Device(dict):
         for _subs_name in signals:
             if '%s_subs' % _subs_name in specified_set:
                 kwargs.update({'%s_truth_table' % _subs_name:
-                                   [signals_subs['%s_subs' % _subs_name][str(_name)] for _name in signals[_subs_name]]})
+                               [signals_subs['%s_subs' % _subs_name][str(_name)] for _name in signals[_subs_name]]})
                 kwargs.update({'%s_function' % _subs_name:
-                                   SOPform(signals[_subs_name], [kwargs['%s_truth_table' % _subs_name]])})
+                               SOPform(signals[_subs_name], [kwargs['%s_truth_table' % _subs_name]])})
         kwargs.update(signals)
         super(Device, self).__init__(**kwargs)
 

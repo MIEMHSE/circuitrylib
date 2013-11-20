@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 __author__ = 'Sergey Sobko'
-__email__ = 'quote2-developers@rbc.ru'
+__email__ = 'S.Sobko@profitware.ru'
+__copyright__ = 'Copyright 2013, The Profitware Group'
 
 from sympy.logic import *
 
@@ -8,7 +12,6 @@ from circuitry.devices import Device
 
 
 class DeviceSimple(Device):
-
     logic_function = None
     mandatory_signals = ('data_signals', 'output_signals',)
 
