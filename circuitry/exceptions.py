@@ -32,3 +32,11 @@ class LogicFunctionNotSpecified(CircuitException):
 
     def __str__(self):
         return repr(self.logic_class)
+
+
+class SignalsMismatch(CircuitException):
+    def __init__(self, signals):
+        self.signals = signals
+
+    def __str__(self):
+        return repr(self.signals)
