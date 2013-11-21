@@ -40,3 +40,11 @@ class SignalsMismatch(CircuitException):
 
     def __str__(self):
         return repr(self.signals)
+
+
+class SignalsSubsMismatch(CircuitException):
+    def __init__(self, signals):
+        self.signals = signals
+
+    def __str__(self):
+        return repr(self.signals)

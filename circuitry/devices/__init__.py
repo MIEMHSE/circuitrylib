@@ -8,7 +8,7 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 from sympy import symbols
 from sympy.logic.boolalg import SOPform
 
-from circuitry.exceptions import SignalsNotSpecified, SignalsSubsNotSpecified, SignalsMismatch
+from circuitry.exceptions import SignalsNotSpecified, SignalsSubsNotSpecified, SignalsMismatch, SignalsSubsMismatch
 
 
 class Device(dict):
@@ -41,10 +41,13 @@ class Device(dict):
         # Create truth tables and functions by substitutions
         for _subs_name in signals:
             if '%s_subs' % _subs_name in specified_set:
-                kwargs.update({'%s_truth_table' % _subs_name:
-                               [signals_subs['%s_subs' % _subs_name][str(_name)] for _name in signals[_subs_name]]})
-                kwargs.update({'%s_function' % _subs_name:
-                               SOPform(signals[_subs_name], [kwargs['%s_truth_table' % _subs_name]])})
+                try:
+                    kwargs.update({'%s_truth_table' % _subs_name:
+                                   [signals_subs['%s_subs' % _subs_name][str(_name)] for _name in signals[_subs_name]]})
+                    kwargs.update({'%s_function' % _subs_name:
+                                   SOPform(signals[_subs_name], [kwargs['%s_truth_table' % _subs_name]])})
+                except KeyError:
+                    raise SignalsSubsMismatch(tuple(signals[_subs_name]))
         kwargs.update(signals)
         super(Device, self).__init__(**kwargs)
 
@@ -55,11 +58,11 @@ class Device(dict):
             if key.endswith('_signals'):
                 try:
                     assert key in self
-                    if isinstance(value, Device):
-                        signals.update({key: value})
-                    else:
+                    if isinstance(value, list) or isinstance(value, tuple):
                         signals.update({key: tuple([_value for _value in value])})
                         assert len(signals[key]) == len(self[key])
+                    else:
+                        signals.update({key: value})
                 except AssertionError:
                     if key in self:
                         key = self[key]
@@ -68,15 +71,31 @@ class Device(dict):
                     raise SignalsMismatch(self[key])
         # Check if all signal values except output_signals specified
         specified_set = set(signals)
-        mandatory_set = set(self.mandatory_signals)
+        if self.mandatory_signals is not None:
+            mandatory_set = set(self.mandatory_signals)
+        else:
+            mandatory_set = set()
         output_set = {'output_signals'}
         if specified_set & mandatory_set != mandatory_set ^ output_set:
             expected_set = mandatory_set ^ specified_set
             raise SignalsNotSpecified(tuple(expected_set))
         # Get value of every signal slot
+        # TODO: Handle all signals until one of them raises StopIteration
+        signals_values = dict()
         for signal in signals:
-            # TODO: signal handling
-            pass
+            try:
+                signals_values[signal] = next(signals[signal])
+            except TypeError:
+                signals_values[signal] = signals[signal]
+            try:
+                assert len(signals_values[signal]) == len(self[signal])
+            except AssertionError:
+                raise SignalsMismatch(self[signal])
+        for signal_output in self._signals_handler(signals_values):
+            yield signal_output
+
+    def _signals_handler(self, signals_values):
+        raise StopIteration
 
     def __setattr__(self, key, value):
         self[key] = value

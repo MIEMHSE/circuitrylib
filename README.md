@@ -1,12 +1,12 @@
 # CircuitryLib
 
-**A Python library for creating and modelling various сircuit engineering system.**
+**A Python library for creating and modelling various сircuit engineering systems.**
 
 Author: The Profitware Group <S.Sobko@profitware.ru>
 
 ## Introduction
 
-This library provides interface for creating, modelling various сircuit engineering system including output to LaTeX and graphical representations. It works with Python versions from 2.7. Other versions are not tested yet.
+This library provides interface for creating and modelling various сircuit engineering systems. It provides output to LaTeX and graphical representations. It works with Python versions from 2.7. Other versions are not tested yet.
 
 ## Building
 

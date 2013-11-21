@@ -37,3 +37,12 @@ class DeviceMux(Device):
         self.address_and_data_function = SOPform(self.address_signals + self.data_signals,
                                                  address_and_data_minterms, dontcares=address_and_data_exludes)
         self.function = self.strobe_signals_function & self.address_and_data_function
+
+    def _signals_handler(self, signals_values):
+        signals_subs = dict()
+        for signals in signals_values:
+            signals_subs.update(dict(zip(self[signals], signals_values[signals])))
+        int_value = int(self.function.subs(signals_subs))
+        output_signals = tuple([int(Not(Xor(int_value, _output_signal))) for _output_signal in
+                                self.output_signals_truth_table])
+        yield output_signals
