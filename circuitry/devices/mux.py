@@ -39,10 +39,9 @@ class DeviceMux(Device):
         self.function = self.strobe_signals_function & self.address_and_data_function
 
     def _signals_handler(self, signals_values):
-        signals_subs = dict()
-        for signals in signals_values:
-            signals_subs.update(dict(zip(self[signals], signals_values[signals])))
-        int_value = int(self.function.subs(signals_subs))
-        output_signals = tuple([int(Not(Xor(int_value, _output_signal))) for _output_signal in
-                                self.output_signals_truth_table])
-        yield output_signals
+        while True:
+            signals_subs = self._signals_handler_subs(signals_values)
+            int_value = int(self.function.subs(signals_subs))
+            output_signals = tuple([int(Not(Xor(int_value, _output_signal))) for _output_signal in
+                                    self.output_signals_truth_table])
+            yield output_signals

@@ -79,23 +79,46 @@ class Device(dict):
         if specified_set & mandatory_set != mandatory_set ^ output_set:
             expected_set = mandatory_set ^ specified_set
             raise SignalsNotSpecified(tuple(expected_set))
+        #
         # Get value of every signal slot
-        # TODO: Handle all signals until one of them raises StopIteration
-        signals_values = dict()
+        #
+        # There are three variants of signal handling:
+        #
+        # 1. signals[signal]=generator - DONE (generator returns tuple on every single step)
+        # 2. signals[signal]=(1, 1, 1) - DONE
+        # 3. signals[signal]=(1, 1, generator) - should generator return a tuple or one value on every single step?
+        #
         for signal in signals:
             try:
-                signals_values[signal] = next(signals[signal])
-            except TypeError:
-                signals_values[signal] = signals[signal]
-            try:
-                assert len(signals_values[signal]) == len(self[signal])
+                assert len(signals[signal]) == len(self[signal])
             except AssertionError:
                 raise SignalsMismatch(self[signal])
-        for signal_output in self._signals_handler(signals_values):
+            except TypeError:  # Generator function has no __len__
+                pass
+
+        for signal_output in self._signals_handler(signals):
             yield signal_output
 
     def _signals_handler(self, signals_values):
         raise StopIteration
+
+    def _signals_handler_subs(self, signals_values):
+        signals_subs = dict()
+        for signals in signals_values:
+            try:
+                # signals[signal]=generator
+                signals_subs.update(dict(zip(self[signals], next(signals_values[signals]))))
+            except TypeError:
+                # signals[signal]=(1, 1, 1)
+                signals_subs.update(dict(zip(self[signals], signals_values[signals])))
+        # signals[signal]=(1, 1, generator)
+        # FIXME: For now we use single value generator. Should this remain?
+        for k, v in signals_subs.iteritems():
+            try:
+                signals_subs.update({k: next(v)})
+            except TypeError:
+                pass
+        return signals_subs
 
     def __setattr__(self, key, value):
         self[key] = value
