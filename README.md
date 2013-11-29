@@ -15,6 +15,7 @@ From source:
 Install the dependencies:
 
 - [SymPy](http://sympy.org/)
+- [Pillow](http://python-imaging.github.io/) (maintained PIL fork)
 
 Alternatively use `pip`:
 
@@ -40,6 +41,7 @@ The library provides classes for circuitry elements: basic digital logic gates a
 First import necessary modules:
 ```
 >>> from circuitry.devices.mux import DeviceMux
+>>> from circuitry.graphical import DefaultElectronicSymbol
 >>> from circuitry.latex.mux import DeviceMuxTruthTable
 ```
 
@@ -61,6 +63,11 @@ To create truth table for multiplexer and output it to LaTeX:
         {'latex_columns': device_mux_latex_truth_table.latex_columns,
          'latex_columns_names': device_mux_latex_truth_table.latex_columns_names,
          'latex_table': device_mux_latex_truth_table.latex_table}
+```
+
+To show electronic symbol for multiplexer:
+```
+>>> DefaultElectronicSymbol(device=device_mux).image.show()
 ```
 
 ## TODO
