@@ -36,10 +36,3 @@ class DeviceAnd(DeviceSimple):
 class DeviceOr(DeviceSimple):
     logic_function = Or
 
-
-class DeviceNand(DeviceSimple):
-    logic_function = Nand
-
-
-class DeviceNor(DeviceSimple):
-    logic_function = Nor

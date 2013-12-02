@@ -74,9 +74,7 @@ class DefaultElectronicSymbol(object):
         try:
             self._font = ImageFont.truetype(self._options['fontname'], 16)
             _font_loaded = True
-        except ImportError:
-            pass
-        except IOError:
+        except (ImportError, IOError):
             pass
         if not _font_loaded:
             self._font = ImageFont.load_default()
@@ -127,8 +125,18 @@ class DefaultElectronicSymbol(object):
                                 self._options['output_signals_vertical_line_x'],
                                 self._options['right_x'])
                 self._draw_one_pin(_position_index, self._options['right_x'], self._options['width'])
+                try:
+                    _is_inverted = self._device.output_signals_subs[str(_signal)] == 0
+                except AttributeError:
+                    _is_inverted = False
+                if _is_inverted:
+                    _circle_radius = self._options['pins_interval_height'] / 3
+                    _pin_circle_coordinates = (self._options['right_x'] - _circle_radius,
+                                               self._options['pins_positions'][_position_index] - _circle_radius,
+                                               self._options['right_x'] + _circle_radius,
+                                               self._options['pins_positions'][_position_index] + _circle_radius)
+                    self._surface.ellipse(_pin_circle_coordinates, self._options['background'], 1)
                 _position_index += 1
-            pass
 
     def _draw_text(self, text, position_index, left_x, right_x):
         _text_dimension = self._font.getsize(text)

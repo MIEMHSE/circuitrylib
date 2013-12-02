@@ -45,14 +45,14 @@ First import necessary modules:
 >>> from circuitry.latex.mux import DeviceMuxTruthTable
 ```
 
-To create multiplexer device with two strobe signal slots, three address signal slots, eight data signal slots and one output signal slot:
+To create multiplexer device with two strobe signal slots, three address signal slots, eight data signal slots, one straight output signal slot and one inverted output signal slot:
 ```
 >>> device_mux = DeviceMux(strobe_signals='v:2',
                            address_signals='a:3',
                            data_signals='d:8',
-                           output_signals='y:1',
+                           output_signals='y:2',
                            strobe_signals_subs=dict(v0=1, v1=0),
-                           output_signals_subs=dict(y0=1))
+                           output_signals_subs=dict(y0=1, y1=0))
 ```
 
 To create truth table for multiplexer and output it to LaTeX:
