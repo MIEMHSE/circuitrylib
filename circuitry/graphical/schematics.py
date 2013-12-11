@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw
 from circuitry.devices.simple import DeviceAnd, DeviceOr, DeviceNot
 from circuitry.graphical import load_font
 from circuitry.graphical.symbol import DefaultElectronicSymbol
+from circuitry.graphical.wires import Wire, WiresPool
 
 
 class DefaultSchematics(object):
@@ -95,8 +96,21 @@ class MultiplexerSchematics(DefaultSchematics):
 
     def _draw_inputs(self):
         # FIXME: Draw wires and connect devices to input bus
-        _input_height = 15
-        _inputs = [_input for _input in self._device]
-        for _position_input in range(1, len(self._inputs)):
-            _current_y = _position_input * _input_height
-            self._surface.line((30, _current_y, self._options['width'], _current_y), self._options['foreground'], 1)
+        wires_pool = WiresPool()
+        for _signals_tuple in self._device.input_signals:
+            for _signal in _signals_tuple:
+                if _signal in self._inputs:
+                    wires_pool += [Wire(signal=_signal)]
+        inputs_not_list = list(self._inputs_not)
+        for _signal in sorted(inputs_not_list, key=lambda rec: wires_pool.index(rec.args[0])):
+            wires_pool += [Wire(signal=_signal)]
+
+        #from pprint import pprint
+        #pprint(wires_pool)
+        #_input_height = 15
+        #_inputs = [_input for _input in self._device if _input.endswith('_signals') and _input != 'output_signals']
+        #print self._device.input_signals
+        #print _inputs
+        #for _position_input in range(1, len(self._inputs)):
+        #    _current_y = _position_input * _input_height
+        #    self._surface.line((30, _current_y, self._options['width'], _current_y), self._options['foreground'], 1)

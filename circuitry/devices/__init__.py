@@ -120,6 +120,14 @@ class Device(dict):
                 pass
         return signals_subs
 
+    @property
+    def input_signals(self):
+        signals_list = list()
+        for i in self.mandatory_signals:
+            if i != 'output_signals':
+                signals_list += [self[i]]
+        return signals_list
+
     def __setattr__(self, key, value):
         self[key] = value
 
