@@ -52,8 +52,8 @@ class DefaultSchematics(object):
         self._font = load_font(self._options['fontname'])
         self._surface = ImageDraw.Draw(self._image)
 
-    def _draw_simple_device(self, device_function_list, position_index):
-        _device_distance_height = self._options['height'] / (len(device_function_list) + 1)
+    def _draw_simple_device(self, device_function_list, position_index, device_offset):
+        _device_distance_height = self._options['height'] / (len(device_function_list) + 1) + device_offset
         _device_height = _device_distance_height
         for device_function in device_function_list:
             DeviceClass = None
@@ -82,17 +82,18 @@ class DefaultSchematics(object):
 
 
 class MultiplexerSchematics(DefaultSchematics):
-    def _draw_device(self, function_list=None, position=1):
+    def _draw_device(self, function_list=None, position=1, _device_offset=None):
         if function_list is None:
             _args_list = [self._device.function]
         else:
             _args_list = function_list
+        _device_offset = len(_args_list) * self._options['pins_interval_height']
         self._inputs |= set(filter(lambda x: x.is_Atom, _args_list))
-        self._draw_simple_device(_args_list, position)
+        self._draw_simple_device(_args_list, position, _device_offset)
         _next_function_list = reduce(list.__add__, [list(_arg.args) for _arg in _args_list])
         if reduce(lambda x, y: x and y.is_Atom, _next_function_list):
             return
-        self._draw_device(_next_function_list, position + 2)
+        self._draw_device(_next_function_list, position + 2, _device_offset)
 
     def _draw_inputs(self):
         # FIXME: Draw wires and connect devices to input bus
@@ -104,7 +105,23 @@ class MultiplexerSchematics(DefaultSchematics):
         inputs_not_list = list(self._inputs_not)
         for _signal in sorted(inputs_not_list, key=lambda rec: wires_pool.index(rec.args[0])):
             wires_pool += [Wire(signal=_signal)]
-
+        _input_height = self._options['pins_interval_height']
+        for i in range(0, len(wires_pool)):
+            _current_y = (i + 1) * _input_height
+            if wires_pool[i].signal.is_Atom:
+                _offset_x = 30
+            else:
+                _offset_x = 60
+                self._surface.line((_offset_x + i * 15, _current_y, _offset_x + i * 15,
+                                    (wires_pool.index(wires_pool[i].signal.args[0]) + 1) * _input_height),
+                                   self._options['foreground'], 1)
+            self._surface.line((_offset_x, _current_y, self._options['width'], _current_y),
+                               self._options['foreground'], 1)
+            text = str(wires_pool[i].signal)
+            _text_dimension = self._font.getsize(text)
+            _text_position = (_offset_x / 2 - _text_dimension[0] / 2,
+                              _current_y - _text_dimension[1] / 2)
+            self._surface.text(_text_position, text, self._options['foreground'], self._font)
         #from pprint import pprint
         #pprint(wires_pool)
         #_input_height = 15
