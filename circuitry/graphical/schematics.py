@@ -6,6 +6,7 @@ __email__ = 'S.Sobko@profitware.ru'
 __copyright__ = 'Copyright 2013, The Profitware Group'
 
 from PIL import Image, ImageDraw
+from networkx import DiGraph
 
 from circuitry.devices.simple import DeviceAnd, DeviceOr, DeviceNot
 from circuitry.graphical import load_font
@@ -23,11 +24,19 @@ class DefaultSchematics(object):
     _inputs = None
     _inputs_not = None
 
+    _graph = None
+
     @property
     def image(self):
         self._draw_device()
         self._draw_inputs()
         return self._image
+
+    @property
+    def graph(self):
+        # Populate graph
+        self._walk_through_device_function(self._device.function)
+        return self._graph
 
     def __init__(self, **kwargs):
         self._options = {
@@ -44,6 +53,8 @@ class DefaultSchematics(object):
         self._inputs_not = set()
         # Here we may set width, height, device and other options
         self._options.update(kwargs)
+        # Create directed graph
+        self._graph = DiGraph()
         # Load device
         self._device = self._options['device']
         # PIL manipulations
@@ -73,6 +84,30 @@ class DefaultSchematics(object):
                                    _device_height - _device_symbol._options['height'] / 2))
             _device_height += _device_distance_height
         pass
+
+    def _walk_through_device_function(self, device_function, is_start=True):
+        type = 'common'
+        if is_start:
+            type = 'output'
+        DeviceClass = None
+        if str(device_function.func).lower() == 'and':
+            DeviceClass = DeviceAnd
+        if str(device_function.func).lower() == 'or':
+            DeviceClass = DeviceOr
+        if str(device_function.func).lower() == 'not':
+            DeviceClass = DeviceNot
+            if device_function.args[0].is_Atom:
+                type = 'input'
+        if not str(device_function) in self._graph.nodes():
+            if DeviceClass is not None:
+                _device = DeviceClass(data_signals='d:%s' % len(device_function.args),
+                                      output_signals='y:1', output_signals_subs=dict(y0=1))
+                self._graph.add_node(str(device_function), device=_device, type=type)
+                for subfunction in device_function.args:
+                    self._walk_through_device_function(subfunction, is_start=False)
+                    self._graph.add_edge(str(subfunction), str(device_function))
+            else:
+                self._graph.add_node(str(device_function), type='input')
 
     def _draw_device(self):
         pass
