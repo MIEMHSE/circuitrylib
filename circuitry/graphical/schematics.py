@@ -8,7 +8,7 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 from PIL import Image, ImageDraw
 from networkx import DiGraph
 
-from circuitry.devices.simple import DeviceAnd, DeviceOr, DeviceNot
+from circuitry.devices.simple import create_simple_device_by_function
 from circuitry.graphical import load_font
 from circuitry.graphical.symbol import DefaultElectronicSymbol
 from circuitry.graphical.wires import Wire, WiresPool
@@ -67,17 +67,12 @@ class DefaultSchematics(object):
         _device_distance_height = self._options['height'] / (len(device_function_list) + 1) + device_offset
         _device_height = _device_distance_height
         for device_function in device_function_list:
-            DeviceClass = None
-            if str(device_function.func).lower() == 'and':
-                DeviceClass = DeviceAnd
-            if str(device_function.func).lower() == 'or':
-                DeviceClass = DeviceOr
-            if str(device_function.func).lower() == 'not' and len(device_function.args) == 1 and \
-                    device_function.args[0].is_Atom:
-                self._inputs_not |= {device_function}
-            if DeviceClass is not None:
-                _device = DeviceClass(data_signals='d:%s' % len(device_function.args),
-                                      output_signals='y:1', output_signals_subs=dict(y0=1))
+            device_type, _device = create_simple_device_by_function(device_function)
+            if _device is not None:
+                _created_device_function = _device.function
+                if device_type == 'input':
+                    if str(_created_device_function.func).lower() == 'not':
+                        self._inputs_not |= {device_function}
                 _device_symbol = DefaultElectronicSymbol(device=_device)
                 self._image.paste(_device_symbol.image,
                                   (self._options['width'] - _device_symbol._options['width'] * position_index,
@@ -86,28 +81,16 @@ class DefaultSchematics(object):
         pass
 
     def _walk_through_device_function(self, device_function, is_start=True):
-        type = 'common'
-        if is_start:
-            type = 'output'
-        DeviceClass = None
-        if str(device_function.func).lower() == 'and':
-            DeviceClass = DeviceAnd
-        if str(device_function.func).lower() == 'or':
-            DeviceClass = DeviceOr
-        if str(device_function.func).lower() == 'not':
-            DeviceClass = DeviceNot
-            if device_function.args[0].is_Atom:
-                type = 'input'
-        if not str(device_function) in self._graph.nodes():
-            if DeviceClass is not None:
-                _device = DeviceClass(data_signals='d:%s' % len(device_function.args),
-                                      output_signals='y:1', output_signals_subs=dict(y0=1))
-                self._graph.add_node(str(device_function), device=_device, type=type)
+        function_identifier = str(device_function)
+        device_type, _device = create_simple_device_by_function(device_function, is_start)
+        if not function_identifier in self._graph.nodes():
+            if _device is not None:
+                self._graph.add_node(function_identifier, device=_device, type=device_type)
                 for subfunction in device_function.args:
                     self._walk_through_device_function(subfunction, is_start=False)
-                    self._graph.add_edge(str(subfunction), str(device_function))
+                    self._graph.add_edge(str(subfunction), function_identifier)
             else:
-                self._graph.add_node(str(device_function), type='input')
+                self._graph.add_node(function_identifier, type='input')
 
     def _draw_device(self):
         pass

@@ -36,3 +36,24 @@ class DeviceAnd(DeviceSimple):
 class DeviceOr(DeviceSimple):
     logic_function = Or
 
+
+def create_simple_device_by_function(device_function, is_topmost=False):
+    DeviceClass, _device = None, None
+    device_class_dict = {
+        'and': DeviceAnd,
+        'or': DeviceOr,
+        'not': DeviceNot
+    }
+    device_type = 'common'
+    if is_topmost:
+        device_type = 'output'
+    _method = str(device_function.func).lower()
+    if _method in device_class_dict:
+        DeviceClass = device_class_dict[_method]
+        if _method == 'not':
+            if len(device_function.args) == 1 and device_function.args[0].is_Atom:
+                device_type = 'input'
+        _device = DeviceClass(data_signals='d:%s' % len(device_function.args),
+                              output_signals='y:1', output_signals_subs=dict(y0=1))
+    return device_type, _device
+
