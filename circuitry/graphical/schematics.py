@@ -38,6 +38,75 @@ class DefaultSchematics(object):
         self._walk_through_device_function(self._device.function)
         return self._graph
 
+    @property
+    def matlab_code(self):
+        _matlab_code_lines = [
+            r"sys = '%(model_name)s'",
+            r"new_system(sys)",
+            r"open_system(sys)"
+        ]
+        _matlab_code_template = {
+            'position': r"pos = [%(x)s %(y)s %(x)s + %(width)s %(y)s + %(height)s]",
+            'add_block_logical': r"add_block('built-in/Logical Operator', " +
+                                 r"[sys '/%(device_name)s%(device_id)s'], 'Position', pos)",
+            'add_block_input': r"add_block('built-in/Inport', [sys '/In%(device_id)s'], 'Position', pos)"
+        }
+        _counters = {
+            'inport': 0,
+            'and': 0,
+            'or': 0,
+            'not': 0,
+            'current_position_x': 1,
+            'current_position_y_by_x': dict()
+        }
+        graph = self.graph
+        for graph_node in graph.nodes_iter():
+            node = graph.node[graph_node]
+            _device, _device_type, _device_func_name, _device_height = \
+                None, node['type'], '', 10
+
+            _counters['current_position_x'] = 3
+
+            # not is_Atom
+            if 'device' in node:
+                _device = node['device']
+                _device_func_name = str(_device.function.func).lower()
+                _device_height = 5 * (len(_device.input_signals) + 1)
+
+            if _device_type == 'input':
+                _counters['current_position_x'] = 1
+                if _device_func_name == 'not':
+                    _counters['current_position_x'] = 2
+
+            if not _counters['current_position_x'] in _counters['current_position_y_by_x']:
+                _counters['current_position_y_by_x'][_counters['current_position_x']] = 0
+
+            # Count position
+            _matlab_code_lines.append(_matlab_code_template['position'] % {
+                'x': 30 * (_counters['current_position_x'] * 2),
+                'y': _counters['current_position_y_by_x'][_counters['current_position_x']],
+                'width': 30,
+                'height': _device_height
+            })
+            _counters['current_position_y_by_x'][_counters['current_position_x']] += _device_height + 20
+
+            if _device_type == 'input' and _device_func_name != 'not':
+                _counters['inport'] += 1
+                _matlab_code_lines.append(_matlab_code_template['add_block_input'] % {
+                    'device_id': _counters['inport']
+                })
+
+            # Not, And, Or
+            # FIXME: Proper logic gate and number of inputs generation
+            if _device_func_name in _counters:
+                _counters[_device_func_name] += 1
+                _matlab_device_name = _device_func_name[:1].upper() + _device_func_name[1:]
+                _matlab_code_lines.append(_matlab_code_template['add_block_logical'] % {
+                    'device_name': _matlab_device_name,
+                    'device_id': _counters[_device_func_name]
+                })
+        return '\n'.join(_matlab_code_lines) % {'model_name': 'testModel'}
+
     def __init__(self, **kwargs):
         self._options = {
             'background': 'white',
