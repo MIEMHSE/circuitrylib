@@ -72,7 +72,7 @@ class DefaultSchematics(object):
         # Count maximal y for common
         if device_type == 'common':
             _new_max_y = counters['current_position_y_by_x'][counters['current_position_x']] + device_height + 50
-            if _new_max_y > counters['inputs_max_y'] * 3:
+            if _new_max_y > counters['inputs_max_y'] * 2:
                 counters['current_position_x'] += 1
                 counters['current_position_y_by_x'][counters['current_position_x']] = counters['inputs_max_y']
             counters['common_max_y'] = max(_new_max_y, counters['common_max_y'])
@@ -92,7 +92,8 @@ class DefaultSchematics(object):
             'add_block_logical': r"add_block('built-in/Logical Operator', " +
                                  r"[sys '/%(device_name)s%(device_id)s'], 'Position', pos, " +
                                  r"'Operator', '%(device_name_upper)s', 'Number of input ports', '%(ports_number)s')",
-            'add_block_input': r"add_block('built-in/Inport', [sys '/In%(device_id)s'], 'Position', pos)"
+            'add_block_input': r"add_block('built-in/Inport', [sys '/In%(device_id)s'], 'Position', pos)",
+            'add_line': r"add_line(sys, '%(connect_from)s', '%(connect_to)s', 'autorouting','on')"
         }
         # Counters are used at each step to handle current and previous data
         _counters = {
@@ -104,7 +105,8 @@ class DefaultSchematics(object):
             'current_position_y_by_x': dict(),
             'inputs_max_y': 0,
             'common_max_y': 0,
-            'prev_type': ''
+            'prev_type': '',
+            'edges': dict()
         }
 
         _graph_type_order = {
@@ -130,7 +132,7 @@ class DefaultSchematics(object):
 
             # Count position
             _matlab_code_lines.append(_matlab_code_template['position'] % {
-                'x': 60 * (_counters['current_position_x'] * 2),
+                'x': 100 * (_counters['current_position_x'] * 2),
                 'y': _counters['current_position_y_by_x'][_counters['current_position_x']],
                 'width': 30,
                 'height': _device_height
@@ -139,23 +141,47 @@ class DefaultSchematics(object):
             # Y-distance between between current and next device
             _counters['current_position_y_by_x'][_counters['current_position_x']] += _device_height + 20
 
+            _matlab_device_name_and_id = ''
             # Straight inputs
             if _device_type == 'input' and _device_func_name != 'not':
                 _counters['inport'] += 1
-                _matlab_code_lines.append(_matlab_code_template['add_block_input'] % {
+                _device_options = {
                     'device_id': _counters['inport']
-                })
+                }
+                _matlab_code_lines.append(_matlab_code_template['add_block_input'] % _device_options)
+                _matlab_device_name_and_id = 'In%(device_id)s' % _device_options
 
             # Not, And, Or
             if _device_func_name in _counters:
                 _counters[_device_func_name] += 1
                 _matlab_device_name = _device_func_name[:1].upper() + _device_func_name[1:]
+                _device_options = {
+                    'device_name': _matlab_device_name,
+                    'device_id': _counters[_device_func_name]
+                }
                 _matlab_code_lines.append(_matlab_code_template['add_block_logical'] % {
                     'device_name': _matlab_device_name,
                     'device_name_upper': _matlab_device_name.upper(),
                     'ports_number': _device_ports_count,
                     'device_id': _counters[_device_func_name]
                 })
+                _matlab_device_name_and_id = '%(device_name)s%(device_id)s' % _device_options
+            _counters['edges'][graph_node] = _matlab_device_name_and_id
+
+        # Connect devices using edges
+        _connection_ports = dict()
+        for edge in graph.edges_iter():
+            _connect_from = '%s/1' % _counters['edges'][edge[0]]
+            if not _counters['edges'][edge[1]] in _connection_ports:
+                _connection_ports[_counters['edges'][edge[1]]] = 1
+            _connect_to = '%s/%s' % (_counters['edges'][edge[1]], _connection_ports[_counters['edges'][edge[1]]])
+            _connection_ports[_counters['edges'][edge[1]]] += 1
+
+            _matlab_code_lines.append(_matlab_code_template['add_line'] % {
+                'connect_from': _connect_from,
+                'connect_to': _connect_to
+            })
+
         return '\n'.join(_matlab_code_lines) % {'model_name': 'testModel'}
 
     def __init__(self, **kwargs):
