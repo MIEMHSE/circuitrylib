@@ -38,8 +38,50 @@ class DefaultSchematics(object):
         self._walk_through_device_function(self._device.function)
         return self._graph
 
+    def _matlab_code_handle_counters(self, counters, device_type, device_func_name, device_height):
+        # Inputs @ position=1, inverted inputs @ position=2
+        if device_type == 'input':
+            counters['current_position_x'] = 1
+            if device_func_name == 'not':
+                counters['current_position_x'] = 2
+
+        # Shift output to position + 1
+        if device_type == 'output' and counters['prev_type'] == 'common':
+            counters['current_position_x'] += 1
+
+        # Shift common to position + 1
+        if device_type == 'common' and counters['prev_type'] == 'input':
+            counters['current_position_x'] += 1
+
+        counters['prev_type'] = device_type
+
+        # Get device start y-position by device type
+        if not counters['current_position_x'] in counters['current_position_y_by_x']:
+            if device_type == 'input':
+                counters['current_position_y_by_x'][counters['current_position_x']] = 0
+            elif device_type == 'common':
+                counters['current_position_y_by_x'][counters['current_position_x']] = counters['inputs_max_y']
+            else:
+                counters['current_position_y_by_x'][counters['current_position_x']] = counters['common_max_y']
+
+        # Count maximal y for inputs
+        if device_type == 'input':
+            _new_max_y = counters['current_position_y_by_x'][counters['current_position_x']] + device_height + 50
+            counters['inputs_max_y'] = max(_new_max_y, counters['inputs_max_y'])
+
+        # Count maximal y for common
+        if device_type == 'common':
+            _new_max_y = counters['current_position_y_by_x'][counters['current_position_x']] + device_height + 50
+            if _new_max_y > counters['inputs_max_y'] * 3:
+                counters['current_position_x'] += 1
+                counters['current_position_y_by_x'][counters['current_position_x']] = counters['inputs_max_y']
+            counters['common_max_y'] = max(_new_max_y, counters['common_max_y'])
+
+        return counters
+
     @property
     def matlab_code(self):
+        # MATLAB code templates
         _matlab_code_lines = [
             r"sys = '%(model_name)s'",
             r"new_system(sys)",
@@ -52,21 +94,30 @@ class DefaultSchematics(object):
                                  r"'Operator', '%(device_name_upper)s', 'Number of input ports', '%(ports_number)s')",
             'add_block_input': r"add_block('built-in/Inport', [sys '/In%(device_id)s'], 'Position', pos)"
         }
+        # Counters are used at each step to handle current and previous data
         _counters = {
             'inport': 0,
             'and': 0,
             'or': 0,
             'not': 0,
             'current_position_x': 1,
-            'current_position_y_by_x': dict()
+            'current_position_y_by_x': dict(),
+            'inputs_max_y': 0,
+            'common_max_y': 0,
+            'prev_type': ''
         }
+
+        _graph_type_order = {
+            'input': 1,
+            'common': 2,
+            'output': 3
+        }
+
         graph = self.graph
-        for graph_node in graph.nodes_iter():
+        for graph_node in sorted(graph.nodes(), key=lambda rec: _graph_type_order[graph.node[rec]['type']]):
             node = graph.node[graph_node]
             _device, _device_type, _device_func_name, _device_height, _device_ports_count = \
                 None, node['type'], '', 10, 1
-
-            _counters['current_position_x'] = 3
 
             # not is_Atom
             if 'device' in node:
@@ -75,23 +126,20 @@ class DefaultSchematics(object):
                 _device_func_name = str(_device.function.func).lower()
                 _device_height = 10 * (_device_ports_count + 1)
 
-            if _device_type == 'input':
-                _counters['current_position_x'] = 1
-                if _device_func_name == 'not':
-                    _counters['current_position_x'] = 2
-
-            if not _counters['current_position_x'] in _counters['current_position_y_by_x']:
-                _counters['current_position_y_by_x'][_counters['current_position_x']] = 0
+            _counters = self._matlab_code_handle_counters(_counters, _device_type, _device_func_name, _device_height)
 
             # Count position
             _matlab_code_lines.append(_matlab_code_template['position'] % {
-                'x': 30 * (_counters['current_position_x'] * 2),
+                'x': 60 * (_counters['current_position_x'] * 2),
                 'y': _counters['current_position_y_by_x'][_counters['current_position_x']],
                 'width': 30,
                 'height': _device_height
             })
+
+            # Y-distance between between current and next device
             _counters['current_position_y_by_x'][_counters['current_position_x']] += _device_height + 20
 
+            # Straight inputs
             if _device_type == 'input' and _device_func_name != 'not':
                 _counters['inport'] += 1
                 _matlab_code_lines.append(_matlab_code_template['add_block_input'] % {
