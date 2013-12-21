@@ -48,7 +48,8 @@ class DefaultSchematics(object):
         _matlab_code_template = {
             'position': r"pos = [%(x)s %(y)s %(x)s + %(width)s %(y)s + %(height)s]",
             'add_block_logical': r"add_block('built-in/Logical Operator', " +
-                                 r"[sys '/%(device_name)s%(device_id)s'], 'Position', pos)",
+                                 r"[sys '/%(device_name)s%(device_id)s'], 'Position', pos, " +
+                                 r"'Operator', '%(device_name_upper)s', 'Number of input ports', '%(ports_number)s')",
             'add_block_input': r"add_block('built-in/Inport', [sys '/In%(device_id)s'], 'Position', pos)"
         }
         _counters = {
@@ -62,16 +63,17 @@ class DefaultSchematics(object):
         graph = self.graph
         for graph_node in graph.nodes_iter():
             node = graph.node[graph_node]
-            _device, _device_type, _device_func_name, _device_height = \
-                None, node['type'], '', 10
+            _device, _device_type, _device_func_name, _device_height, _device_ports_count = \
+                None, node['type'], '', 10, 1
 
             _counters['current_position_x'] = 3
 
             # not is_Atom
             if 'device' in node:
                 _device = node['device']
+                _device_ports_count = len(_device.input_signals[0])
                 _device_func_name = str(_device.function.func).lower()
-                _device_height = 5 * (len(_device.input_signals) + 1)
+                _device_height = 10 * (_device_ports_count + 1)
 
             if _device_type == 'input':
                 _counters['current_position_x'] = 1
@@ -97,12 +99,13 @@ class DefaultSchematics(object):
                 })
 
             # Not, And, Or
-            # FIXME: Proper logic gate and number of inputs generation
             if _device_func_name in _counters:
                 _counters[_device_func_name] += 1
                 _matlab_device_name = _device_func_name[:1].upper() + _device_func_name[1:]
                 _matlab_code_lines.append(_matlab_code_template['add_block_logical'] % {
                     'device_name': _matlab_device_name,
+                    'device_name_upper': _matlab_device_name.upper(),
+                    'ports_number': _device_ports_count,
                     'device_id': _counters[_device_func_name]
                 })
         return '\n'.join(_matlab_code_lines) % {'model_name': 'testModel'}
