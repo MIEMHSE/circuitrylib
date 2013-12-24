@@ -53,6 +53,9 @@ class DefaultSchematics(object):
         if device_type == 'common' and counters['prev_type'] == 'input':
             counters['current_position_x'] += 1
 
+        if device_type == '' and counters['prev_type'] == 'output':
+            counters['current_position_x'] += 1
+
         counters['prev_type'] = device_type
 
         # Get device start y-position by device type
@@ -79,25 +82,36 @@ class DefaultSchematics(object):
 
         return counters
 
-    @property
-    def matlab_code(self):
+    def matlab_code(self, model_name='newModel'):
         # MATLAB code templates
-        _matlab_code_lines = [
-            r"sys = '%(model_name)s'",
-            r"new_system(sys)",
-            r"open_system(sys)"
-        ]
+        _matlab_code_lines = list()
+        _model_name_part_full_list = list()
+        for model_name_part in model_name.split('/'):
+            _model_name_part_full_list.append(model_name_part)
+            _model_name_part_full = '/'.join(_model_name_part_full_list)
+            _matlab_code_lines.append(r"sys = '%(model_name)s'" % {
+                'model_name': _model_name_part_full
+            })
+            if len(_model_name_part_full_list) == 1:
+                _matlab_code_lines += [
+                    r"new_system(sys)",
+                    r"open_system(sys)"
+                ]
+            else:
+                _matlab_code_lines.append(r"add_block('built-in/SubSystem', sys)")
         _matlab_code_template = {
             'position': r"pos = [%(x)s %(y)s %(x)s + %(width)s %(y)s + %(height)s]",
             'add_block_logical': r"add_block('built-in/Logical Operator', " +
                                  r"[sys '/%(device_name)s%(device_id)s'], 'Position', pos, " +
                                  r"'Operator', '%(device_name_upper)s', 'Number of input ports', '%(ports_number)s')",
             'add_block_input': r"add_block('built-in/Inport', [sys '/In%(device_id)s'], 'Position', pos)",
-            'add_line': r"add_line(sys, '%(connect_from)s', '%(connect_to)s', 'autorouting','on')"
+            'add_line': r"add_line(sys, '%(connect_from)s', '%(connect_to)s', 'autorouting','on')",
+            'add_block_output': r"add_block('built-in/Outport', [sys '/Out%(device_id)s'], 'Position', pos)",
         }
         # Counters are used at each step to handle current and previous data
         _counters = {
             'inport': 0,
+            'outport': 0,
             'and': 0,
             'or': 0,
             'not': 0,
@@ -114,6 +128,8 @@ class DefaultSchematics(object):
             'common': 2,
             'output': 3
         }
+
+        _matlab_device_name_and_id = ''
 
         graph = self.graph
         for graph_node in sorted(graph.nodes(), key=lambda rec: _graph_type_order[graph.node[rec]['type']]):
@@ -167,6 +183,25 @@ class DefaultSchematics(object):
                 })
                 _matlab_device_name_and_id = '%(device_name)s%(device_id)s' % _device_options
             _counters['edges'][graph_node] = _matlab_device_name_and_id
+
+        # Add output
+        _counters = self._matlab_code_handle_counters(_counters, '', '', 0)
+        _matlab_code_lines.append(_matlab_code_template['position'] % {
+            'x': 100 * (_counters['current_position_x'] * 2),
+            'y': _counters['current_position_y_by_x'][_counters['current_position_x']],
+            'width': 30,
+            'height': 20
+        })
+        _counters['outport'] += 1
+        _device_options = {
+            'device_id': _counters['outport']
+        }
+        _matlab_code_lines.append(_matlab_code_template['add_block_output'] % _device_options)
+
+        _matlab_code_lines.append(_matlab_code_template['add_line'] % {
+            'connect_from': '%s/1' % _matlab_device_name_and_id,
+            'connect_to': 'Out%s/1' % _counters['outport']
+        })
 
         # Connect devices using edges
         _connection_ports = dict()
