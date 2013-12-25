@@ -8,7 +8,8 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 from PIL import Image, ImageDraw
 from networkx import DiGraph
 
-from circuitry.devices.simple import create_simple_device_by_function
+from circuitry.devices.simple import create_simple_device_by_function, \
+    create_simple_device_by_func_and_number_of_inputs
 from circuitry.graphical import load_font
 from circuitry.graphical.symbol import DefaultElectronicSymbol
 from circuitry.graphical.wires import Wire, WiresPool
@@ -35,8 +36,80 @@ class DefaultSchematics(object):
     @property
     def graph(self):
         # Populate graph
-        self._walk_through_device_function(self._device.function)
+        if self._graph is None:
+            # Create directed graph
+            self._graph = DiGraph()
+            self._walk_through_device_function(self._device.function)
+            self._process_graph()
         return self._graph
+
+    def _split_device_by_number_of_inputs(self, device, predecessors, successors, number_of_inputs):
+        if len(predecessors) <= number_of_inputs:
+            return
+        function = device.function
+        graph = self._graph
+
+        pred_and_arg = zip(predecessors, function.args)
+        #pprint(pred_and_arg)
+        _addition_boolean = 0
+        _new_predecessors = list()
+        pred_and_arg_list = [pred_and_arg[x:x + number_of_inputs] for x in xrange(0, len(pred_and_arg), number_of_inputs)]
+        #pprint(pred_and_arg_list)
+        for xargs in pred_and_arg_list:
+            predecessors, args = zip(*xargs)
+            #print 'args', args
+            _device_type, _device = create_simple_device_by_function(function.func(*args), save_signal_names=True)
+            _device_name = str(_device.function)
+            graph.add_node(_device_name, type=_device_type, device=_device)
+            for predecessor in predecessors:
+                graph.add_edge(predecessor, _device_name)
+                #print 'edge', predecessor, _device_name
+            _new_predecessors.append(_device_name)
+            #print 'device_pred', _device_name, _device_type
+        #print len(_new_predecessors)
+        _device_type, _device = create_simple_device_by_func_and_number_of_inputs(function.func, len(_new_predecessors))
+        _device_name = str(_device.function)
+        graph.add_node(_device_name, type=_device_type, device=_device)
+        for predecessor in _new_predecessors:
+            graph.add_edge(predecessor, _device_name)
+            #print 'edge', predecessor, _device_name
+        #print 'device_succ', _device_name, _device_type
+        for successor in successors:
+            graph.add_edge(_device_name, successor)
+            #print 'edge', _device_name, successor
+            #new_devices.append(self._split_device_by_number_of_inputs(_device, number_of_inputs))
+        return
+
+    def _replace_graph_node(self, current_node):
+        graph = self._graph
+        predecessors = graph.predecessors(current_node)
+        successors = graph.successors(current_node)
+        if 'device' in graph.node[current_node]:
+            _device = graph.node[current_node]['device']
+            if str(_device.function.func).lower() in ['or']:
+                for predecessor in predecessors:
+                    graph.remove_edge(predecessor, current_node)
+                for successor in successors:
+                    graph.remove_edge(current_node, successor)
+                #print _device.function, _device.input_signals, len(predecessors)
+                self._split_device_by_number_of_inputs(_device, predecessors, successors, 4)
+
+        #disconnected_nodes = list()
+        #for predecessor in :
+        #    pass
+        #print graph.node[current_node]
+        return predecessors
+
+    def _process_graph(self, current_node=None):
+        graph = self._graph
+        if current_node is None:
+            for graph_node in graph.nodes_iter():
+                if graph.node[graph_node]['type'] == 'output':
+                    current_node = graph_node
+        predecessors = self._replace_graph_node(current_node)
+        for predecessor in predecessors:
+            self._process_graph(predecessor)
+        pass
 
     def _matlab_code_handle_counters(self, counters, device_type, device_func_name, device_height):
         # Inputs @ position=1, inverted inputs @ position=2
@@ -266,8 +339,6 @@ class DefaultSchematics(object):
         self._inputs_not = set()
         # Here we may set width, height, device and other options
         self._options.update(kwargs)
-        # Create directed graph
-        self._graph = DiGraph()
         # Load device
         self._device = self._options['device']
         # PIL manipulations
