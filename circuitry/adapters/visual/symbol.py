@@ -7,22 +7,21 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 
 from PIL import Image, ImageDraw
 
-from circuitry.graphical import load_font
+from circuitry.adapters import AbstractAdapter
+from circuitry.adapters.visual import load_font
 
 
-class DefaultElectronicSymbol(object):
+class ElectronicSymbolAdapter(AbstractAdapter):
+    public_properties = ('image',)
     _image = None
     _font = None
     _surface = None
-    _device = None
-
-    _options = None
 
     @property
     def image(self):
         return self._image
 
-    def __init__(self, **kwargs):
+    def __init__(self, device, **kwargs):
         self._options = {
             'background': 'white',
             'foreground': 'black',
@@ -35,8 +34,9 @@ class DefaultElectronicSymbol(object):
 
         # Here we may set width, height, device and other options
         self._options.update(kwargs)
-        # Load device
-        self._device = self._options['device']
+
+        super(ElectronicSymbolAdapter, self).__init__(device, **kwargs)
+
         self._get_device_name()
         # Count pins, width and height if not specified, indents for DIP-like image
         self._get_pins_positions()

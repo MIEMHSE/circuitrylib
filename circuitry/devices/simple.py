@@ -63,6 +63,6 @@ def create_simple_device_by_function(device_function, is_topmost=False, save_sig
     return device_type, _device
 
 
-def create_simple_device_by_func_and_number_of_inputs(device_function_token, number_of_inputs):
-    return create_simple_device_by_function(
-        device_function_token(*[symbols(chr(char)) for char in range(ord('a'), ord('z'))[:number_of_inputs]]))
+def create_simple_device_by_func_and_number_of_inputs(device_function_token, number_of_inputs, dnum):
+    rnd_pins = [symbols('random%s' % (num + number_of_inputs * dnum)) for num in range(0, number_of_inputs)]
+    return create_simple_device_by_function(device_function_token(*rnd_pins), save_signal_names=True)

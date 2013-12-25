@@ -16,6 +16,9 @@ Install the dependencies:
 
 - [SymPy](http://sympy.org/)
 - [Pillow](http://python-imaging.github.io/) (maintained PIL fork)
+- [NumPy](http://www.numpy.org/)
+- [NetworkX](http://networkx.github.io/)
+- [MatplotLib](http://matplotlib.org/)
 
 Alternatively use `pip`:
 
@@ -41,8 +44,9 @@ The library provides classes for circuitry elements: basic digital logic gates a
 First import necessary modules:
 ```
 >>> from circuitry.devices.mux import DeviceMux
->>> from circuitry.graphical import DefaultElectronicSymbol
->>> from circuitry.latex.mux import DeviceMuxTruthTable
+>>> from circuitry.adapters.latex.mux import DeviceMuxTruthTableAdapter
+>>> from circuitry.adapters.matlab.extended import ExtendedMatlabAdapter
+>>> from circuitry.adapters.visual.symbol import ElectronicSymbolAdapter
 ```
 
 To create multiplexer device with two strobe signal slots, three address signal slots, eight data signal slots, one straight output signal slot and one inverted output signal slot:
@@ -57,7 +61,7 @@ To create multiplexer device with two strobe signal slots, three address signal 
 
 To create truth table for multiplexer and output it to LaTeX:
 ```
->>> device_mux_latex_truth_table = DeviceMuxTruthTable(device_mux)
+>>> device_mux_latex_truth_table = DeviceMuxTruthTableAdapter(device_mux)
 >>> print (r'\begin{tabular}{%(latex_columns)s}\\\hline\\%(latex_columns_names)s\\' +
            r'\hline\\%(latex_table)s\hline\\\end{tabular}') % \
         {'latex_columns': device_mux_latex_truth_table.latex_columns,
@@ -67,7 +71,13 @@ To create truth table for multiplexer and output it to LaTeX:
 
 To show electronic symbol for multiplexer:
 ```
->>> DefaultElectronicSymbol(device=device_mux).image.show()
+>>> ElectronicSymbolAdapter(device_mux).image.show()
+```
+
+To produce MATLAB code that generates Simulink model:
+```
+>>> mux_schematics = ExtendedMatlabAdapter(device_mux)
+>>> print '\n'.join(mux_schematics)
 ```
 
 ## TODO
