@@ -77,7 +77,7 @@ To show electronic symbol for multiplexer:
 To produce MATLAB code that generates Simulink model:
 ```
 >>> mux_schematics = ExtendedMatlabAdapter(device_mux)
->>> print '\n'.join(mux_schematics)
+>>> print '\n'.join(mux_schematics.matlab_code())
 ```
 
 ## TODO
