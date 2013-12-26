@@ -11,7 +11,7 @@ from circuitry.adapters.latex import TruthTableAdapter
 class DeviceMuxTruthTableAdapter(TruthTableAdapter):
     @property
     def _truth_table(self):
-        device = self.device
+        device = self._device
         truth_table = device.truth_table
         strobe_signals_add = list()
         for i in range(0, len(device.strobe_signals)):
