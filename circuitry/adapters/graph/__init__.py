@@ -12,9 +12,10 @@ from circuitry.devices.simple import create_simple_device_by_function, create_si
 
 
 class GraphAdapter(AbstractAdapter):
-    public_properties = ('graph',)
+    public_properties = ('graph', 'max_distance')
     _dnum = 0
     _graph = None
+    _max_distance = 0
 
     @property
     def graph(self):
@@ -23,24 +24,30 @@ class GraphAdapter(AbstractAdapter):
             # Create directed graph
             self._graph = DiGraph()
             self._walk_through_device_function(self._device.function)
-            self._process_graph()
+            #self._process_graph()
         return self._graph
 
-    def _walk_through_device_function(self, device_function, is_start=True):
+    @property
+    def max_distance(self):
+        _ = self.graph
+        return self._max_distance
+
+    def _walk_through_device_function(self, device_function, is_start=True, distance=0):
+        self._max_distance = distance
         function_identifier = str(device_function)
         device_type, _device = create_simple_device_by_function(device_function, is_start)
-        if not function_identifier in self._graph.nodes():
+        if not function_identifier in self.graph.nodes():
             if _device is not None:
-                self._graph.add_node(function_identifier, device=_device, type=device_type)
+                self.graph.add_node(function_identifier, device=_device, type=device_type, distance=distance)
                 for subfunction in device_function.args:
-                    self._walk_through_device_function(subfunction, is_start=False)
-                    self._graph.add_edge(str(subfunction), function_identifier)
+                    self._walk_through_device_function(subfunction, is_start=False, distance=distance+1)
+                    self.graph.add_edge(str(subfunction), function_identifier)
             else:
-                self._graph.add_node(function_identifier, type='input')
+                self.graph.add_node(function_identifier, type='input', distance=distance)
 
     def _split_device_by_number_of_inputs(self, device, predecessors, successors, number_of_inputs):
         function = device.function
-        graph = self._graph
+        graph = self.graph
 
         if len(predecessors) <= number_of_inputs:
             for predecessor in predecessors:
@@ -85,7 +92,7 @@ class GraphAdapter(AbstractAdapter):
         return True
 
     def _replace_graph_node(self, current_node):
-        graph = self._graph
+        graph = self.graph
         predecessors = graph.predecessors(current_node)
         successors = graph.successors(current_node)
         if 'device' in graph.node[current_node]:
@@ -105,7 +112,7 @@ class GraphAdapter(AbstractAdapter):
         return predecessors
 
     def _process_graph(self, current_node=None):
-        graph = self._graph
+        graph = self.graph
         if current_node is None:
             for graph_node in graph.nodes_iter():
                 if graph.node[graph_node]['type'] == 'output':

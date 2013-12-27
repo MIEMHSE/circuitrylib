@@ -12,23 +12,25 @@ from circuitry.adapters.graph import GraphAdapter
 class MatlabAdapter(AbstractAdapter):
     public_methods = ('matlab_code',)
 
-    def _matlab_code_handle_counters(self, counters, device_type, device_func_name, device_height):
+    def _matlab_code_handle_counters(self, counters, device_type, device_func_name, device_height, position_x):
+        counters['current_position_x'] = position_x
+
         # Inputs @ position=1, inverted inputs @ position=2
         if device_type == 'input':
             counters['current_position_x'] = 1
             if device_func_name == 'not':
                 counters['current_position_x'] = 2
 
-        # Shift output to position + 1
-        if device_type == 'output' and counters['prev_type'] == 'common':
-            counters['current_position_x'] += 1
-
-        # Shift common to position + 1
-        if device_type == 'common' and counters['prev_type'] == 'input':
-            counters['current_position_x'] += 1
-
-        if device_type == '' and counters['prev_type'] == 'output':
-            counters['current_position_x'] += 1
+        # # Shift output to position + 1
+        # if device_type == 'output' and counters['prev_type'] == 'common':
+        #     counters['current_position_x'] += 1
+        #
+        # # Shift common to position + 1
+        # if device_type == 'common' and counters['prev_type'] == 'input':
+        #     counters['current_position_x'] += 1
+        #
+        # if device_type == '' and counters['prev_type'] == 'output':
+        #     counters['current_position_x'] += 1
 
         counters['prev_type'] = device_type
 
@@ -49,9 +51,9 @@ class MatlabAdapter(AbstractAdapter):
         # Count maximal y for common
         if device_type == 'common':
             _new_max_y = counters['current_position_y_by_x'][counters['current_position_x']] + device_height + 50
-            if _new_max_y > counters['inputs_max_y'] * 2:
-                counters['current_position_x'] += 1
-                counters['current_position_y_by_x'][counters['current_position_x']] = counters['inputs_max_y']
+            # if _new_max_y > counters['inputs_max_y'] * 2:
+            #     counters['current_position_x'] += 1
+            #     counters['current_position_y_by_x'][counters['current_position_x']] = counters['inputs_max_y']
             counters['common_max_y'] = max(_new_max_y, counters['common_max_y'])
 
         return counters
@@ -80,7 +82,8 @@ class MatlabAdapter(AbstractAdapter):
 
         _matlab_device_name_and_id = ''
 
-        graph = GraphAdapter(self._device).graph
+        graph_adapter = GraphAdapter(self._device)
+        graph = graph_adapter.graph
 
         def _sorting_function(rec):
             second_param = 0
@@ -100,7 +103,8 @@ class MatlabAdapter(AbstractAdapter):
                 _device_func_name = str(_device.function.func).lower()
                 _device_height = 10 * (_device_ports_count + 1)
 
-            _counters = self._matlab_code_handle_counters(_counters, _device_type, _device_func_name, _device_height)
+            _counters = self._matlab_code_handle_counters(_counters, _device_type, _device_func_name, _device_height,
+                                                          graph_adapter.max_distance - node['distance'] + 2)
 
             # Count position
             matlab_code_lines.append(matlab_code_template['position'] % {
@@ -141,7 +145,7 @@ class MatlabAdapter(AbstractAdapter):
             _counters['edges'][graph_node] = _matlab_device_name_and_id
 
         # Add output
-        _counters = self._matlab_code_handle_counters(_counters, '', '', 0)
+        _counters = self._matlab_code_handle_counters(_counters, '', '', 0, graph_adapter.max_distance + 3)
         matlab_code_lines.append(matlab_code_template['position'] % {
             'x': 100 * (_counters['current_position_x'] * 2),
             'y': _counters['current_position_y_by_x'][_counters['current_position_x']],
