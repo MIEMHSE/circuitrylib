@@ -100,7 +100,7 @@ class MatlabAdapter(AbstractAdapter):
             if 'device' in node:
                 _device = node['device']
                 _device_ports_count = len(_device.input_signals[0])
-                _device_func_name = str(_device.function.func).lower()
+                _device_func_name = str(_device.functions[0].func).lower()
                 _device_height = 10 * (_device_ports_count + 1)
 
             _counters = self._matlab_code_handle_counters(_counters, _device_type, _device_func_name, _device_height,

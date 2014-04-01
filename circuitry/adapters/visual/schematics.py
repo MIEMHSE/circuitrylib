@@ -59,7 +59,7 @@ class DefaultSchematics(object):
         for device_function in device_function_list:
             device_type, _device = create_simple_device_by_function(device_function)
             if _device is not None:
-                _created_device_function = _device.function
+                _created_device_function = _device.functions[0]
                 if device_type == 'input':
                     if str(_created_device_function.func).lower() == 'not':
                         self._inputs_not |= {device_function}
@@ -80,7 +80,7 @@ class DefaultSchematics(object):
 class MultiplexerSchematics(DefaultSchematics):
     def _draw_device(self, function_list=None, position=1, _device_offset=None):
         if function_list is None:
-            _args_list = [self._device.function]
+            _args_list = [self._device.functions[0]]
         else:
             _args_list = function_list
         _device_offset = len(_args_list) * self._options['pins_interval_height']

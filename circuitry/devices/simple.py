@@ -20,10 +20,10 @@ class DeviceSimple(Device):
         super(DeviceSimple, self).__init__(**kwargs)
 
     @property
-    def function(self):
+    def functions(self):
         if self.logic_function is None:
             raise LogicFunctionNotSpecified(self.__class__)
-        return self.logic_function(*self.data_signals)
+        return [self.logic_function(*self.data_signals)]
 
 
 class DeviceNot(DeviceSimple):

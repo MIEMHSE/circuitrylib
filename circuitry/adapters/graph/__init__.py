@@ -24,7 +24,7 @@ class GraphAdapter(AbstractAdapter):
         if self._graph is None:
             # Create directed graph
             self._graph = DiGraph()
-            self._walk_through_device_function(self._device.function)
+            self._walk_through_device_function(self._device.functions[0])
             self._process_graph()
         return self._graph
 
@@ -47,7 +47,7 @@ class GraphAdapter(AbstractAdapter):
                 self.graph.add_node(function_identifier, type='input', distance=distance)
 
     def _split_device_by_number_of_inputs(self, device, predecessors, successors, distance, number_of_inputs):
-        function = device.function
+        function = device.functions[0]
         graph = self.graph
 
         _orig_predecessors = predecessors
@@ -95,8 +95,8 @@ class GraphAdapter(AbstractAdapter):
                 #x = True
                 continue
             _device_type, _device = create_simple_device_by_function(function.func(*args), save_signal_names=True)
-            _device_name = str(_device.function)
-            #print _device_name, _device_type, _device.function
+            _device_name = str(_device.functions[0])
+            #print _device_name, _device_type, _device.functions[0]
             graph.add_node(_device_name, type=_device_type, device=_device, distance=distance)
             #for predecessor in predecessors:
             #    graph.add_edge(predecessor, _device_name)
@@ -108,7 +108,7 @@ class GraphAdapter(AbstractAdapter):
         _device_type, _device = create_simple_device_by_func_and_number_of_inputs(function.func, len(_new_predecessors),
                                                                                   self._dnum)
         self._dnum += 1
-        _device_name = str(_device.function)
+        _device_name = str(_device.functions[0])
         #if x:
         #    #pprint(_device)
         #    #print _device_name, _device_type
@@ -142,12 +142,12 @@ class GraphAdapter(AbstractAdapter):
         successors = graph.successors(current_node)
         if 'device' in graph.node[current_node]:
             _device = graph.node[current_node]['device']
-            if str(_device.function.func).lower() in ['or']:
+            if str(_device.functions[0].func).lower() in ['or']:
                 for predecessor in predecessors:
                     graph.remove_edge(predecessor, current_node)
                 for successor in successors:
                     graph.remove_edge(current_node, successor)
-                    #print _device.function, _device.input_signals, len(predecessors)
+                    #print _device.functions[0], _device.input_signals, len(predecessors)
                 _distance = graph.node[current_node]['distance']
                 if self._split_device_by_number_of_inputs(_device, predecessors, successors, _distance, 4):
                     graph.remove_node(current_node)
