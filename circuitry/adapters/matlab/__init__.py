@@ -89,7 +89,11 @@ class MatlabAdapter(AbstractAdapter):
             second_param = 0
             if graph.node[rec]['type'] == 'input' and not 'device' in graph.node[rec]:
                 second_param = map(str, reduce(list.__add__, map(list, self._device.input_signals))).index(rec)
+            if graph.node[rec]['type'] == 'output':
+                second_param = graph.node[rec]['global_device_number']
             return _graph_type_order[graph.node[rec]['type']], second_param
+
+        _output_device_list = list()
 
         for graph_node in sorted(graph.nodes(), key=_sorting_function):
             node = graph.node[graph_node]
@@ -144,24 +148,33 @@ class MatlabAdapter(AbstractAdapter):
                 _matlab_device_name_and_id = '%(device_name)s%(device_id)s' % _device_options
             _counters['edges'][graph_node] = _matlab_device_name_and_id
 
+            if node['type'] == 'output':
+                _output_device_list.append(_matlab_device_name_and_id)
+
         # Add output
         _counters = self._matlab_code_handle_counters(_counters, '', '', 0, graph_adapter.max_distance + 3)
-        matlab_code_lines.append(matlab_code_template['position'] % {
-            'x': 100 * (_counters['current_position_x'] * 2),
-            'y': _counters['current_position_y_by_x'][_counters['current_position_x']],
-            'width': 30,
-            'height': 20
-        })
-        _counters['outport'] += 1
-        _device_options = {
-            'device_id': _counters['outport']
-        }
-        matlab_code_lines.append(matlab_code_template['add_block_output'] % _device_options)
 
-        matlab_code_lines.append(matlab_code_template['add_line'] % {
-            'connect_from': '%s/1' % _matlab_device_name_and_id,
-            'connect_to': 'Out%s/1' % _counters['outport']
-        })
+        for _matlab_device_name_and_id in _output_device_list:
+            matlab_code_lines.append(matlab_code_template['position'] % {
+                'x': 100 * (_counters['current_position_x'] * 2),
+                'y': _counters['current_position_y_by_x'][_counters['current_position_x']],
+                'width': 30,
+                'height': 20
+            })
+
+            # Y-distance between between current and next device
+            _counters['current_position_y_by_x'][_counters['current_position_x']] += 40
+
+            _counters['outport'] += 1
+            _device_options = {
+                'device_id': _counters['outport']
+            }
+            matlab_code_lines.append(matlab_code_template['add_block_output'] % _device_options)
+
+            matlab_code_lines.append(matlab_code_template['add_line'] % {
+                'connect_from': '%s/1' % _matlab_device_name_and_id,
+                'connect_to': 'Out%s/1' % _counters['outport']
+            })
 
         # Connect devices using edges
         _connection_ports = dict()

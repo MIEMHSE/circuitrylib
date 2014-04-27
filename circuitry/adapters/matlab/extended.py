@@ -23,6 +23,8 @@ class ExtendedMatlabAdapter(MatlabAdapter):
         signal_const = zip(map(str, reduce(list.__add__, map(list, self._device.input_signals))),
                            reduce(list.__add__, self._device.truth_table[0][:-1]))
 
+        output_signals_count = len(self._device.output_signals)
+
         _matlab_code_template = {
             'position': r"pos = [%(x)s %(y)s %(x)s + %(width)s %(y)s + %(height)s]",
             'add_line': r"add_line(sys, '%(connect_from)s', '%(connect_to)s', 'autorouting','on')",
@@ -61,19 +63,20 @@ class ExtendedMatlabAdapter(MatlabAdapter):
         position_y_counter = 20
         _device_height = 30
         for subsystem in subsystems:
-            matlab_code_lines.append(_matlab_code_template['position'] % {
-                'x': 250,
-                'y': position_y_counter,
-                'width': 70,
-                'height': _device_height
-            })
-            matlab_code_lines.append(_matlab_code_template['add_block_display'] % {
-                'device_id': ('_%s' % subsystem)
-            })
-            matlab_code_lines.append(_matlab_code_template['add_line'] % {
-                'connect_from': '%s/1' % subsystem,
-                'connect_to': 'Display%s/1' % ('_%s' % subsystem)
-            })
-            position_y_counter += _device_height + 20
+            for output_signal_i in range(1, output_signals_count + 1):
+                matlab_code_lines.append(_matlab_code_template['position'] % {
+                    'x': 250,
+                    'y': position_y_counter,
+                    'width': 70,
+                    'height': _device_height
+                })
+                matlab_code_lines.append(_matlab_code_template['add_block_display'] % {
+                    'device_id': ('_%s_%s' % (subsystem, output_signal_i))
+                })
+                matlab_code_lines.append(_matlab_code_template['add_line'] % {
+                    'connect_from': '%s/%s' % (subsystem, output_signal_i),
+                    'connect_to': 'Display%s/1' % ('_%s_%s' % (subsystem, output_signal_i))
+                })
+                position_y_counter += _device_height + 20
 
         return matlab_code_lines

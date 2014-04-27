@@ -17,6 +17,7 @@ class GraphAdapter(AbstractAdapter):
     _graph = None
     _max_distance = 0
     _temp_counter = 0
+    _global_device_number = 0
 
     @property
     def graph(self):
@@ -24,8 +25,11 @@ class GraphAdapter(AbstractAdapter):
         if self._graph is None:
             # Create directed graph
             self._graph = DiGraph()
-            self._walk_through_device_function(self._device.functions[0])
-            self._process_graph()
+            for function in self._device.functions:
+                self._walk_through_device_function(function)
+            #self._process_graph()
+            #for node in self._graph.nodes():
+            #    print node, self._graph.node[node]
         return self._graph
 
     @property
@@ -39,12 +43,16 @@ class GraphAdapter(AbstractAdapter):
         device_type, _device = create_simple_device_by_function(device_function, is_start)
         if not function_identifier in self.graph.nodes():
             if _device is not None:
-                self.graph.add_node(function_identifier, device=_device, type=device_type, distance=distance)
+                self.graph.add_node(function_identifier, device=_device, type=device_type,
+                                    distance=distance, global_device_number=self._global_device_number)
+                self._global_device_number += 1
                 for subfunction in device_function.args:
                     self._walk_through_device_function(subfunction, is_start=False, distance=distance+1)
                     self.graph.add_edge(str(subfunction), function_identifier)
             else:
-                self.graph.add_node(function_identifier, type='input', distance=distance)
+                self.graph.add_node(function_identifier, type='input', distance=distance,
+                                    global_device_number=self._global_device_number)
+                self._global_device_number += 1
 
     def _split_device_by_number_of_inputs(self, device, predecessors, successors, distance, number_of_inputs):
         function = device.functions[0]
