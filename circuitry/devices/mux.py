@@ -26,6 +26,7 @@ class DeviceMux(Device):
             address_line = list()
             for address_line_value in generate_binary_lines_current(len(self.address_signals), i):
                 address_line.append(address_line_value)
+            address_line.reverse()
             data_line = len(self.data_signals) * [0]
             if i < len(data_line):
                 data_line[i] = 1
@@ -63,6 +64,7 @@ class DeviceDemux(Device):
             address_line = list()
             for address_line_value in generate_binary_lines_current(len(self.address_signals), i):
                 address_line.append(address_line_value)
+            address_line.reverse()
             data_line = len(self.output_signals) * [0]
             if i < len(data_line):
                 data_line[i] = 1

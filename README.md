@@ -44,7 +44,7 @@ The library provides classes for circuitry elements: basic digital logic gates a
 First import necessary modules:
 ```
 >>> from circuitry.devices.mux import DeviceMux
->>> from circuitry.adapters.latex.mux import DeviceMuxTruthTableAdapter
+>>> from circuitry.adapters.latex.mux import DeviceMuxLatexTruthTableAdapter
 >>> from circuitry.adapters.matlab.extended import ExtendedMatlabAdapter
 >>> from circuitry.adapters.visual.symbol import ElectronicSymbolAdapter
 ```
@@ -61,7 +61,7 @@ To create multiplexer device with two strobe signal slots, three address signal 
 
 To create truth table for multiplexer and output it to LaTeX:
 ```
->>> device_mux_latex_truth_table = DeviceMuxTruthTableAdapter(device_mux)
+>>> device_mux_latex_truth_table = DeviceMuxLatexTruthTableAdapter(device_mux)
 >>> print (r'\begin{tabular}{%(latex_columns)s}\\\hline\\%(latex_columns_names)s\\' +
            r'\hline\\%(latex_table)s\hline\\\end{tabular}') % \
         {'latex_columns': device_mux_latex_truth_table.latex_columns,

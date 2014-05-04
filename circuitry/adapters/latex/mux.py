@@ -5,10 +5,10 @@ __author__ = 'Sergey Sobko'
 __email__ = 'S.Sobko@profitware.ru'
 __copyright__ = 'Copyright 2013, The Profitware Group'
 
-from circuitry.adapters.latex import TruthTableAdapter
+from circuitry.adapters.latex import LatexTruthTableAdapter
 
 
-class DeviceMuxTruthTableAdapter(TruthTableAdapter):
+class DeviceMuxLatexTruthTableAdapter(LatexTruthTableAdapter):
     @property
     def _truth_table(self):
         device = self._device

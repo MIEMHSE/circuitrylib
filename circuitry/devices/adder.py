@@ -46,6 +46,8 @@ class DeviceAdd(Device):
                 else:
                     second_line.append(line_value)
                 value_index += 1
+            first_line.reverse()
+            second_line.reverse()
             line_subs = dict()
             for i in range(0, len(self.first_signals)):
                 line_subs[str(self.first_signals[i])] = first_line[i]

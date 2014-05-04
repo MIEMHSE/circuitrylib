@@ -10,7 +10,7 @@ from re import match
 from circuitry.adapters import AbstractAdapter
 
 
-class TruthTableAdapter(AbstractAdapter):
+class LatexTruthTableAdapter(AbstractAdapter):
     public_properties = ('latex_columns', 'latex_columns_names', 'latex_table')
 
     @property
