@@ -29,6 +29,10 @@ class DeviceSimple(Device):
 class DeviceNot(DeviceSimple):
     logic_function = Not
 
+    @property
+    def functions(self):
+        return [self.logic_function(signal) for signal in self.data_signals]
+
 
 class DeviceAnd(DeviceSimple):
     logic_function = And
