@@ -44,6 +44,22 @@ Check out the latest development version anonymously with:
 The library provides classes for circuitry elements: basic digital logic gates and devices like multiplexers and adders.
 It also supports output to LaTeX. Graphical output is planned.
 
+*Implemented devices:*
+
+* devices.simple.DeviceNot - NOT logic gate / inverter
+* devices.simple.DeviceAnd - AND logic gate / logical conjunction
+* devices.simple.DeviceOr - OR logic gate / logical disjunction
+
+* devices.mux.DeviceMux - MUX / Multiplexer
+* devices.mux.DeviceDemux - DEMUX / Demultiplexer
+
+* devices.adder.DeviceAdd - Adder
+* devices.adder.DeviceInc - Increment
+* devices.adder.DeviceDec - Decrement
+* devices.adder.Device12Comp - Ones' complement to two's complement
+* devices.adder.Device21Comp - Two's complement to ones' complement
+* devices.adder.DeviceNeg - Two's complement negation
+
 *Multiplexer example:*
 
 First import necessary modules:
@@ -85,8 +101,11 @@ To produce MATLAB code that generates Simulink model:
 >>> print '\n'.join(mux_schematics.matlab_code())
 ```
 
+*Adder example:*
+
 To create adder device with one strobe signal slot, augend of 4 slots, addend of 4 slots and output of 6 slots (4 bits + OF + OF for two's complement):
 ```
+>>> from circuitry.devices.adder import DeviceAdd
 >>> device_adder = DeviceAdd(strobe_signals='v:1',
                              first_signals='f:4',
                              second_signals='s:4',
