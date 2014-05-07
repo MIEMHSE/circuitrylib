@@ -7,7 +7,7 @@ __copyright__ = 'Copyright 2014, The Profitware Group'
 
 from sympy.logic import *
 
-from circuitry import generate_binary_lines_current, output_truth_table
+from circuitry import generate_binary_lines_current
 from circuitry.devices import Device
 from circuitry.devices.simple import DeviceNot
 
@@ -37,7 +37,7 @@ class DeviceAdd(Device):
             current_p = function_p(x, y, current_p)
             self.functions.append(self.strobe_signals_function & current_s)
         self.functions.append(self.strobe_signals_function & current_p)  # Overflow
-        self.functions.append(Xor(prev_p, current_p))  # Invalid state function for twos' complementary (overflow)
+        self.functions.append(Xor(prev_p, current_p))  # Invalid state function for two's complement (overflow)
         self.truth_table = list()
         input_signals_len = len(self.first_signals) + len(self.second_signals)
         for bin_i in range(0, 2 ** input_signals_len):
@@ -113,7 +113,7 @@ class DeviceDec(Device):
 
 
 class Device12Comp(DeviceInc):
-    """Ones' complementary to twos' complementary device"""
+    """Ones' complement to two's complement device"""
 
     def __init__(self, **kwargs):
         super(Device12Comp, self).__init__(**kwargs)
@@ -137,7 +137,7 @@ class Device12Comp(DeviceInc):
 
 
 class Device21Comp(DeviceDec):
-    """Twos' complementary to ones' complementary device"""
+    """Two's complement to ones' complement device"""
 
     def __init__(self, **kwargs):
         super(Device21Comp, self).__init__(**kwargs)
@@ -161,7 +161,7 @@ class Device21Comp(DeviceDec):
 
 
 class DeviceNeg(Device):
-    """Negation for twos' complementary"""
+    """Negation for two's complement"""
     mandatory_signals = ('strobe_signals', 'data_signals', 'output_signals',)
     truth_table_signals = ('strobe_signals', 'data_signals', 'output_signals',)
 

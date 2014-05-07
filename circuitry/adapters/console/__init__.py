@@ -40,12 +40,12 @@ class TwosComplementaryConsoleTruthTableAdapter(ConsoleTruthTableAdapter):
             max_num = 2 ** (len(bin_line) - 1)
         dec_max_len = len(str(max_num)) + 1
         bin_str = ''.join(map(str, bin_line)[::-1])
-        dec_int, dec_int_two_complementary = bin_str[0], bin_str[0]
+        dec_int, dec_int_two_complement = bin_str[0], bin_str[0]
         if len(bin_str) > 1:
             s_sign = (bin_str[start_pos] == '1') and '-' or ''
             dec_int = int(s_sign + '0b' + bin_str[start_pos:], base=2)
             if dec_int >= 0:
-                dec_int_two_complementary = dec_int
+                dec_int_two_complement = dec_int
             else:
-                dec_int_two_complementary = -2 * max_num - dec_int
-        return bin_str + (' (%s, %s)' % (dec_int, dec_int_two_complementary)).ljust(dec_max_len * 2 + 7) + ' '
+                dec_int_two_complement = -2 * max_num - dec_int
+        return bin_str + (' (%s, %s)' % (dec_int, dec_int_two_complement)).ljust(dec_max_len * 2 + 7) + ' '
