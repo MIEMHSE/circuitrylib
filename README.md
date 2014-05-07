@@ -3,11 +3,14 @@
 **A Python library for creating and modelling various сircuit engineering systems (digital logic circuits for now).**
 
 Author: The Profitware Group / Sergey Sobko <S.Sobko@profitware.ru>
+
 The code is mainly written as a part of my very special coursework at Moscow Institute of Electronics and Mathematics (MIEM HSE).
 
 ## Introduction
 
-This library provides interface for creating and modelling various сircuit engineering systems (digital logic circuits for now). It provides output to LaTeX, graphical representations, graphs and MATLAB code that generates Simulink models. It works with Python version 2.7. Other versions are not tested yet.
+This library provides interface for creating and modelling various сircuit engineering systems (digital logic circuits for now).
+It provides output to LaTeX, graphical representations, graphs and MATLAB code that generates Simulink models.
+It works with Python version 2.7. Other versions are not tested yet.
 
 ## Building
 
@@ -38,7 +41,8 @@ Check out the latest development version anonymously with:
 
 ## Using
 
-The library provides classes for circuitry elements: basic digital logic gates and devices like multiplexers and adders. It also supports output to LaTeX. Graphical output is planned.
+The library provides classes for circuitry elements: basic digital logic gates and devices like multiplexers and adders.
+It also supports output to LaTeX. Graphical output is planned.
 
 *Multiplexer example:*
 
