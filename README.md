@@ -46,13 +46,11 @@ It also supports output to LaTeX. Graphical output is planned.
 
 *Implemented devices:*
 
-* devices.simple.DeviceNot - NOT logic gate / inverter
-* devices.simple.DeviceAnd - AND logic gate / logical conjunction
-* devices.simple.DeviceOr - OR logic gate / logical disjunction
-
-* devices.mux.DeviceMux - MUX / Multiplexer
-* devices.mux.DeviceDemux - DEMUX / Demultiplexer
-
+* devices.simple.DeviceNot - NOT logic gate (inverter)
+* devices.simple.DeviceAnd - AND logic gate (logical conjunction)
+* devices.simple.DeviceOr - OR logic gate (logical disjunction)
+* devices.mux.DeviceMux - MUX (multiplexer)
+* devices.mux.DeviceDemux - DEMUX (demultiplexer)
 * devices.adder.DeviceAdd - Adder
 * devices.adder.DeviceInc - Increment
 * devices.adder.DeviceDec - Decrement

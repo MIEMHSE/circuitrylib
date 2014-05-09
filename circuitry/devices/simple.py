@@ -18,6 +18,7 @@ class DeviceSimple(Device):
 
     def __init__(self, **kwargs):
         super(DeviceSimple, self).__init__(**kwargs)
+        self._generate_through_truth_table(signals_list=(self.data_signals,))
 
     @property
     def functions(self):

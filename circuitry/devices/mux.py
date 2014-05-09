@@ -40,14 +40,6 @@ class DeviceMux(Device):
                                                  address_and_data_minterms, dontcares=address_and_data_exludes)
         self.functions = [self.strobe_signals_function & self.address_and_data_function]
 
-    def _signals_handler(self, signals_values):
-        while True:
-            signals_subs = self._signals_handler_subs(signals_values)
-            int_value = int(self.functions[0].subs(signals_subs))
-            output_signals = tuple([int(Not(Xor(int_value, _output_signal))) for _output_signal in
-                                    self.output_signals_truth_table])
-            yield output_signals
-
 
 class DeviceDemux(Device):
     """Demultiplexer device"""

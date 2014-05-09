@@ -8,7 +8,8 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 from sympy import symbols
 from sympy.logic.boolalg import SOPform
 
-from circuitry.exceptions import SignalsNotSpecified, SignalsSubsNotSpecified, SignalsMismatch, SignalsSubsMismatch
+from circuitry import generate_binary_lines_current
+from circuitry.exceptions import SignalsNotSpecified, SignalsSubsNotSpecified, SignalsSubsMismatch
 
 
 class Device(dict):
@@ -51,74 +52,7 @@ class Device(dict):
         kwargs.update(signals)
         super(Device, self).__init__(**kwargs)
 
-    def feed(self, **kwargs):
-        signals = dict()
-        # Iterate over kwargs finding signals
-        for key, value in kwargs.iteritems():
-            if key.endswith('_signals'):
-                try:
-                    assert key in self
-                    if isinstance(value, list) or isinstance(value, tuple):
-                        signals.update({key: tuple([_value for _value in value])})
-                        assert len(signals[key]) == len(self[key])
-                    else:
-                        signals.update({key: value})
-                except AssertionError:
-                    if key in self:
-                        key = self[key]
-                    raise SignalsMismatch(key)
-                except TypeError:
-                    raise SignalsMismatch(self[key])
-        # Check if all signal values except output_signals specified
-        specified_set = set(signals)
-        if self.mandatory_signals is not None:
-            mandatory_set = set(self.mandatory_signals)
-        else:
-            mandatory_set = set()
-        output_set = {'output_signals'}
-        if specified_set & mandatory_set != mandatory_set ^ output_set:
-            expected_set = mandatory_set ^ specified_set
-            raise SignalsNotSpecified(tuple(expected_set))
-        #
-        # Get value of every signal slot
-        #
-        # There are three variants of signal handling:
-        #
-        # 1. signals[signal]=generator - DONE (generator returns tuple on every single step)
-        # 2. signals[signal]=(1, 1, 1) - DONE
-        # 3. signals[signal]=(1, 1, generator) - should generator return a tuple or one value on every single step?
-        #
-        for signal in signals:
-            try:
-                assert len(signals[signal]) == len(self[signal])
-            except AssertionError:
-                raise SignalsMismatch(self[signal])
-            except TypeError:  # Generator function has no __len__
-                pass
-
-        for signal_output in self._signals_handler(signals):
-            yield signal_output
-
-    def _signals_handler(self, signals_values):
-        raise StopIteration
-
-    def _signals_handler_subs(self, signals_values):
-        signals_subs = dict()
-        for signals in signals_values:
-            try:
-                # signals[signal]=generator
-                signals_subs.update(dict(zip(self[signals], next(signals_values[signals]))))
-            except TypeError:
-                # signals[signal]=(1, 1, 1)
-                signals_subs.update(dict(zip(self[signals], signals_values[signals])))
-        # signals[signal]=(1, 1, generator)
-        # FIXME: For now we use single value generator. Should this remain?
-        for k, v in signals_subs.iteritems():
-            try:
-                signals_subs.update({k: next(v)})
-            except TypeError:
-                pass
-        return signals_subs
+    # TODO: MyHDL integration
 
     @property
     def input_signals(self):
@@ -136,3 +70,37 @@ class Device(dict):
             return self[item]
         except KeyError:
             return self.__getattribute__(item)
+
+    def _generate_through_truth_table(self, signals_list=None):
+        self.truth_table = list()
+        if not signals_list:
+            return
+        strobe_signals = False
+        if 'strobe_signals' in self.mandatory_signals:
+            strobe_signals = True
+        input_signals_len = sum([len(signals) for signals in signals_list])
+        for bin_i in range(0, 2 ** input_signals_len):
+            lines = [list() for _ in range(0, len(signals_list))]
+            lines_index, value_index = 0, 0
+            for line_value in generate_binary_lines_current(input_signals_len, bin_i):
+                lines[lines_index].append(line_value)
+                value_index += 1
+                if value_index >= len(signals_list[lines_index]):
+                    value_index = 0
+                    lines_index += 1
+            for line in lines:
+                line.reverse()
+            line_subs = dict()
+            for signals_i in range(0, len(signals_list)):
+                for i in range(0, len(signals_list[signals_i])):
+                    line_subs[str(signals_list[signals_i][i])] = lines[signals_i][i]
+            strobe_signals_truth_table = list()
+            if strobe_signals:
+                line_subs.update(self.strobe_signals_subs)
+                strobe_signals_truth_table = [self.strobe_signals_truth_table]
+            y_line = list()
+            max_length = min(len(self.output_signals), len(self.functions))
+            for i in range(0, max_length):
+                y_line.append(1 if self.functions[i].subs(line_subs) else 0)
+            self.truth_table.append(tuple(strobe_signals_truth_table + lines +
+                                          [y_line[:max_length]]))
