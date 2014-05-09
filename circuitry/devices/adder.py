@@ -7,7 +7,6 @@ __copyright__ = 'Copyright 2014, The Profitware Group'
 
 from sympy.logic import *
 
-from circuitry import generate_binary_lines_current
 from circuitry.devices import Device
 from circuitry.devices.simple import DeviceNot
 
@@ -37,7 +36,7 @@ class DeviceAdd(Device):
             current_p = function_p(x, y, current_p)
             self.functions.append(self.strobe_signals_function & current_s)
         self.functions.append(self.strobe_signals_function & current_p)  # Overflow
-        self.functions.append(Xor(prev_p, current_p))  # Invalid state function for two's complement (overflow)
+        self.functions.append(self.strobe_signals_function & Xor(prev_p, current_p))  # Two's complement overflow
         self._generate_through_truth_table(signals_list=(self.first_signals, self.second_signals))
 
 
@@ -56,7 +55,7 @@ class DeviceInc(Device):
         inc_adder = DeviceAdd(**inc_dict)
         self.functions = list()
         for function in inc_adder.functions[:len(self.output_signals)]:
-            self.functions.append(function.subs({'t0': 1}))
+            self.functions.append(self.strobe_signals_function & function.subs({'t0': 1}))
         self._generate_through_truth_table(signals_list=(self.data_signals,))
 
 
@@ -76,7 +75,7 @@ class DeviceDec(Device):
         self.functions = list()
         dec_subs = {'t%d' % i: 1 for i in range(0, len(self.data_signals))}
         for function in dec_adder.functions[:len(self.output_signals)]:
-            self.functions.append(function.subs(dec_subs))
+            self.functions.append(self.strobe_signals_function & function.subs(dec_subs))
         self._generate_through_truth_table(signals_list=(self.data_signals,))
 
 
@@ -86,9 +85,12 @@ class Device12Comp(DeviceInc):
     def __init__(self, **kwargs):
         super(Device12Comp, self).__init__(**kwargs)
         for i in range(0, len(self.data_signals)):
-            self.functions[i] = Or(
-                And(self.data_signals[-1], self.functions[i]),
-                And(Not(self.data_signals[-1]), self.data_signals[i])
+            self.functions[i] = And(
+                self.strobe_signals_function,
+                Or(
+                    And(self.data_signals[-1], self.functions[i]),
+                    And(Not(self.data_signals[-1]), self.data_signals[i])
+                )
             )
         self._generate_through_truth_table(signals_list=(self.data_signals,))
 
@@ -99,9 +101,12 @@ class Device21Comp(DeviceDec):
     def __init__(self, **kwargs):
         super(Device21Comp, self).__init__(**kwargs)
         for i in range(0, len(self.data_signals)):
-            self.functions[i] = Or(
-                And(self.data_signals[-1], self.functions[i]),
-                And(Not(self.data_signals[-1]), self.data_signals[i])
+            self.functions[i] = And(
+                self.strobe_signals_function,
+                Or(
+                    And(self.data_signals[-1], self.functions[i]),
+                    And(Not(self.data_signals[-1]), self.data_signals[i])
+                )
             )
         self._generate_through_truth_table(signals_list=(self.data_signals,))
 
@@ -133,9 +138,12 @@ class DeviceNeg(Device):
             subs_dict[str(device_dec.data_signals[i])] = self.data_signals[i]
             subs_dict[str(device_not_dec.data_signals[i])] = device_dec.functions[i].subs(subs_dict)
             self.functions.append(
-                Or(
-                    And(self.data_signals[-1], device_inc.functions[i].subs(subs_dict)),  # Negative
-                    And(Not(self.data_signals[-1]), device_not_dec.functions[i].subs(subs_dict))  # Positive
+                And(
+                    self.strobe_signals_function,
+                    Or(
+                        And(self.data_signals[-1], device_inc.functions[i].subs(subs_dict)),  # Negative
+                        And(Not(self.data_signals[-1]), device_not_dec.functions[i].subs(subs_dict))  # Positive
+                    )
                 )
             )
         self._generate_through_truth_table(signals_list=(self.data_signals,))
