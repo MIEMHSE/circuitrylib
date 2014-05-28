@@ -8,8 +8,16 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 from sympy import symbols
 from sympy.logic.boolalg import SOPform
 
-from circuitry import generate_binary_lines_current
 from circuitry.exceptions import SignalsNotSpecified, SignalsSubsNotSpecified, SignalsSubsMismatch
+
+
+def generate_binary_lines_current(n_bin, i):
+    for n in xrange(n_bin, 0, -1):
+        if i - 2 ** (n - 1) < 0:
+            yield 0
+        else:
+            i -= 2 ** (n - 1)
+            yield 1
 
 
 class Device(dict):

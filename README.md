@@ -57,6 +57,8 @@ It also supports output to LaTeX. Graphical output is planned.
 * devices.adder.Device12Comp - Ones' complement to two's complement
 * devices.adder.Device21Comp - Two's complement to ones' complement
 * devices.adder.DeviceNeg - Two's complement negation
+* devices.cmp.DeviceEq - Equality device
+* devices.cmp.DeviceCmp - Digital comparator device
 
 *Multiplexer example:*
 

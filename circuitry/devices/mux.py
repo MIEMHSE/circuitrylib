@@ -7,8 +7,8 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 
 from sympy.logic import *
 
-from circuitry import generate_binary_lines_current
 from circuitry.devices import Device
+from . import generate_binary_lines_current
 
 
 class DeviceMux(Device):
