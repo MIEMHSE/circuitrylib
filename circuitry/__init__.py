@@ -7,6 +7,7 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 
 import inspect
 import os
+import xml.dom.minidom
 
 from circuitry.adapters import AbstractAdapter
 from circuitry.devices import Device
@@ -49,11 +50,30 @@ def check_python_library_classes(libname, baseclass, libfile, classmembers=None)
                 if classmembers:  # Get additional information from class
                     for classmember in classmembers:
                         additional_members[classmember] = class_object.__dict__.get(classmember)
+                        # Check parents' classes for additional information
+                        if not additional_members[classmember]:
+                            base_class_objects = class_object.__bases__
+                            while True:
+                                do_break = False
+                                new_base_classes = list()
+                                for class_base in base_class_objects:
+                                    if class_base == baseclass:
+                                        do_break = True
+                                        break
+                                    additional_members[classmember] = class_base.__dict__.get(classmember)
+                                    if additional_members[classmember]:
+                                        do_break = True
+                                        break
+                                    new_base_classes.extend(list(class_base.__bases__))
+                                if do_break:
+                                    break
+                                base_class_objects = tuple(new_base_classes)
+
                 library_classes.append((libname, class_object.__name__, additional_members))
     return library_classes
 
 
-def self_describe():
+def self_describe(description_type='xml'):
     """Full self-introspection for Adapters and Devices"""
     circuitry_root = os.path.dirname(os.path.abspath(__file__))
     _, circuitry_dirname = os.path.split(circuitry_root)
@@ -77,14 +97,42 @@ def self_describe():
         devices_library_classes.extend(check_python_library_classes(device_import, Device, devices_file,
                                                                     ['mandatory_signals', 'truth_table_signals']))
 
-    # FIXME: There we should print out XML or JSON
-    print {'adapters': adapters_library_classes,
-           'devices': devices_library_classes}
-    return
+    if description_type == 'xml':
+        xml_document = xml.dom.minidom.Document()
+        root_node = xml_document.createElement('root')
+
+        adapters_node = xml_document.createElement('adapters')
+        for adapters_library_class in adapters_library_classes:
+            libname, classname, additional_dict = adapters_library_class
+            adapter_node = xml_document.createElement('adapter')
+            adapter_node.setAttribute('libname', libname)
+            adapter_node.setAttribute('classname', classname)
+            adapters_node.appendChild(adapter_node)
+
+        devices_node = xml_document.createElement('devices')
+        for devices_library_class in devices_library_classes:
+            libname, classname, additional_dict = devices_library_class
+            device_node = xml_document.createElement('device')
+            device_node.setAttribute('libname', libname)
+            device_node.setAttribute('classname', classname)
+            for key, value in additional_dict.iteritems():
+                if key and value:
+                    if isinstance(value, tuple):
+                        value = ';'.join(value)
+                    device_node.setAttribute(key, value)
+            devices_node.appendChild(device_node)
+
+        root_node.appendChild(adapters_node)
+        root_node.appendChild(devices_node)
+        return root_node.toprettyxml()
+    elif description_type == 'dict':
+        return {'adapters': adapters_library_classes,
+                'devices': devices_library_classes}
+    return ''
 
 
 def main():
-    self_describe()
+    print self_describe()
 
 
 if __name__ == '__main__':
