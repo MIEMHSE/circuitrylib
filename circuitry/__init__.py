@@ -85,7 +85,8 @@ def self_describe(description_type='xml'):
     adapters_import = get_python_libraries(circuitry_dirname, adapters_dirname, adapters_root)
     adapters_library_classes = list()
     for adapter_import, adapters_file in adapters_import:
-        adapters_library_classes.extend(check_python_library_classes(adapter_import, AbstractAdapter, adapters_file))
+        adapters_library_classes.extend(check_python_library_classes(adapter_import, AbstractAdapter, adapters_file,
+                                                                     ['__doc__']))
 
     # Devices
     devices_dirname = 'devices'
@@ -95,7 +96,8 @@ def self_describe(description_type='xml'):
     devices_library_classes = list()
     for device_import, devices_file in devices_import:
         devices_library_classes.extend(check_python_library_classes(device_import, Device, devices_file,
-                                                                    ['mandatory_signals', 'truth_table_signals']))
+                                                                    ['mandatory_signals', 'truth_table_signals',
+                                                                     '__doc__']))
 
     if description_type == 'xml':
         xml_document = xml.dom.minidom.Document()
@@ -126,8 +128,22 @@ def self_describe(description_type='xml'):
         root_node.appendChild(devices_node)
         return root_node.toprettyxml()
     elif description_type == 'dict':
-        return {'adapters': adapters_library_classes,
-                'devices': devices_library_classes}
+        adapters_list = list()
+        for libname, classname, additional_dict in adapters_library_classes:
+            adapters_list.append({
+                'libname': libname,
+                'classname': classname,
+                'info': additional_dict
+            })
+        devices_list = list()
+        for libname, classname, additional_dict in devices_library_classes:
+            devices_list.append({
+                'libname': libname,
+                'classname': classname,
+                'info': additional_dict
+            })
+        return {'adapters': adapters_list,
+                'devices': devices_list}
     return ''
 
 
