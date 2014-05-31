@@ -5,7 +5,10 @@ __author__ = 'Sergey Sobko'
 __email__ = 'S.Sobko@profitware.ru'
 __copyright__ = 'Copyright 2013, The Profitware Group'
 
-from networkx import DiGraph
+from tempfile import mkstemp
+
+from networkx import DiGraph, random_layout, draw_networkx_nodes, draw_networkx_edges, draw_networkx_labels
+from matplotlib import pyplot
 
 from circuitry.adapters import AbstractAdapter
 from circuitry.devices.simple import create_simple_device_by_function, create_simple_device_by_func_and_number_of_inputs
@@ -13,11 +16,34 @@ from circuitry.devices.simple import create_simple_device_by_function, create_si
 
 class GraphAdapter(AbstractAdapter):
     public_properties = ('graph', 'max_distance')
+    default_content_type = 'image/png'
     _dnum = 0
     _graph = None
     _max_distance = 0
     _temp_counter = 0
     _global_device_number = 0
+
+    def default_method(self):
+        graph = self.graph
+        labels_dict = dict()
+        for graph_node in graph.nodes_iter():
+            graph_type = graph.node[graph_node]['type']
+            if graph_type == 'input':
+                labels_dict[graph_node] = graph_node
+            elif graph_type == 'output':
+                labels_dict[graph_node] = 'output'
+        pyplot.figure(figsize=(8, 8))
+        graph_pos = random_layout(graph)
+        draw_networkx_nodes(graph, pos=graph_pos, node_size=640)
+        draw_networkx_edges(graph, pos=graph_pos, width=0.5, alpha=0.3)
+        draw_networkx_labels(graph, pos=graph_pos, font_size=8, labels=labels_dict)
+
+        pyplot.xlim(-0.05,1.05)
+        pyplot.ylim(-0.05,1.05)
+        pyplot.axis('off')
+        _, tmpfile = mkstemp(suffix='.png')
+        pyplot.savefig(tmpfile)
+        return tmpfile
 
     @property
     def graph(self):

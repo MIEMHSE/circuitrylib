@@ -10,6 +10,7 @@ from circuitry.adapters import AbstractAdapter
 
 class ConsoleTruthTableAdapter(AbstractAdapter):
     public_properties = ('console_table',)
+    default_method = lambda self: self.console_table()
 
     @property
     def _truth_table(self):

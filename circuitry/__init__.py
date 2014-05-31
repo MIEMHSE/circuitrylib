@@ -57,10 +57,10 @@ def check_python_library_classes(libname, baseclass, libfile, classmembers=None)
                                 do_break = False
                                 new_base_classes = list()
                                 for class_base in base_class_objects:
+                                    additional_members[classmember] = class_base.__dict__.get(classmember)
                                     if class_base == baseclass:
                                         do_break = True
                                         break
-                                    additional_members[classmember] = class_base.__dict__.get(classmember)
                                     if additional_members[classmember]:
                                         do_break = True
                                         break
@@ -86,7 +86,7 @@ def self_describe(description_type='xml'):
     adapters_library_classes = list()
     for adapter_import, adapters_file in adapters_import:
         adapters_library_classes.extend(check_python_library_classes(adapter_import, AbstractAdapter, adapters_file,
-                                                                     ['__doc__']))
+                                                                     ['__doc__', 'default_content_type']))
 
     # Devices
     devices_dirname = 'devices'

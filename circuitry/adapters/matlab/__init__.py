@@ -11,6 +11,7 @@ from circuitry.adapters.graph import GraphAdapter
 
 class MatlabAdapter(AbstractAdapter):
     public_methods = ('matlab_code',)
+    default_method = lambda self: '\n'.join(self.matlab_code)
 
     def _matlab_code_handle_counters(self, counters, device_type, device_func_name, device_height, position_x):
         counters['current_position_x'] = position_x

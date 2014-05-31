@@ -7,6 +7,8 @@ __copyright__ = 'Copyright 2013, The Profitware Group'
 
 
 class AbstractAdapter(object):
+    default_method = None
+    default_content_type = 'text/plain'
     public_methods = None
     public_properties = None
     _device = None

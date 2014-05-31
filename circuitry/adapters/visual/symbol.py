@@ -5,6 +5,8 @@ __author__ = 'Sergey Sobko'
 __email__ = 'S.Sobko@profitware.ru'
 __copyright__ = 'Copyright 2013, The Profitware Group'
 
+from tempfile import mkstemp
+
 from PIL import Image, ImageDraw
 
 from circuitry.adapters import AbstractAdapter
@@ -13,9 +15,16 @@ from circuitry.adapters.visual import load_font
 
 class ElectronicSymbolAdapter(AbstractAdapter):
     public_properties = ('image',)
+    default_content_type = 'image/png'
     _image = None
     _font = None
     _surface = None
+
+    def default_method(self):
+        image = self.image
+        _, tmpfile = mkstemp(suffix='.png')
+        image.save(tmpfile)
+        return tmpfile
 
     @property
     def image(self):
