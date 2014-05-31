@@ -13,8 +13,19 @@ from circuitry.devices import Device
 
 
 class DeviceSimple(Device):
+    """NOOP device"""
     logic_function = None
     mandatory_signals = ('data_signals', 'output_signals',)
+    constraints = {
+        'data_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 10
+        }
+    }
 
     def __init__(self, **kwargs):
         super(DeviceSimple, self).__init__(**kwargs)
@@ -22,13 +33,24 @@ class DeviceSimple(Device):
 
     @property
     def functions(self):
-        if self.logic_function is None:
-            raise LogicFunctionNotSpecified(self.__class__)
+        if not self.logic_function:
+            return self.data_signals
         return [self.logic_function(*self.data_signals)]
 
 
 class DeviceNot(DeviceSimple):
+    """Logic NOT gate"""
     logic_function = Not
+    constraints = {
+        'data_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 10
+        }
+    }
 
     @property
     def functions(self):
@@ -36,12 +58,33 @@ class DeviceNot(DeviceSimple):
 
 
 class DeviceAnd(DeviceSimple):
+    """Logic AND gate"""
     logic_function = And
+    constraints = {
+        'data_signals': {
+            'min': 2,
+            'max': 10
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 1
+        }
+    }
 
 
 class DeviceOr(DeviceSimple):
+    """Logic OR gate"""
     logic_function = Or
-
+    constraints = {
+        'data_signals': {
+            'min': 2,
+            'max': 10
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 1
+        }
+    }
 
 def create_simple_device_by_function(device_function, is_topmost=False, save_signal_names=False):
     DeviceClass, _device = None, None

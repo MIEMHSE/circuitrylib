@@ -14,6 +14,24 @@ class DeviceEq(Device):
     """Equality device"""
     mandatory_signals = ('strobe_signals', 'first_signals', 'second_signals', 'output_signals',)
     truth_table_signals = ('strobe_signals', 'first_signals', 'second_signals', 'output_signals',)
+    constraints = {
+        'strobe_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'first_signals': {
+            'min': 1,
+            'max': 7
+        },
+        'second_signals': {
+            'min': 1,
+            'max': 7
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 7
+        }
+    }
 
     def __init__(self, **kwargs):
         super(DeviceEq, self).__init__(**kwargs)

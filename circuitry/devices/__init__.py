@@ -23,6 +23,7 @@ def generate_binary_lines_current(n_bin, i):
 class Device(dict):
     mandatory_signals = None
     mandatory_signals_using_subs = None
+    constraints = None
 
     def __init__(self, **kwargs):
         signals = dict()

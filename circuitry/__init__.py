@@ -97,7 +97,7 @@ def self_describe(description_type='xml'):
     for device_import, devices_file in devices_import:
         devices_library_classes.extend(check_python_library_classes(device_import, Device, devices_file,
                                                                     ['mandatory_signals', 'truth_table_signals',
-                                                                     '__doc__']))
+                                                                     '__doc__', 'constraints']))
 
     if description_type == 'xml':
         xml_document = xml.dom.minidom.Document()

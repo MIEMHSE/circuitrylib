@@ -16,6 +16,24 @@ class DeviceMux(Device):
     mandatory_signals = ('strobe_signals', 'address_signals', 'data_signals', 'output_signals',)
     mandatory_signals_using_subs = ('strobe_signals', 'output_signals',)
     truth_table_signals = ('strobe_signals', 'address_signals', 'data_signals', 'output_signals',)
+    constraints = {
+        'strobe_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'address_signals': {
+            'min': 1,
+            'max': 5
+        },
+        'data_signals': {
+            'min': 1,
+            'max': 32
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 1
+        }
+    }
 
     def __init__(self, **kwargs):
         super(DeviceMux, self).__init__(**kwargs)
@@ -45,6 +63,24 @@ class DeviceDemux(Device):
     """Demultiplexer device"""
     mandatory_signals = ('strobe_signals', 'address_signals', 'data_signals', 'output_signals',)
     mandatory_signals_using_subs = ('strobe_signals',)
+    constraints = {
+        'strobe_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'address_signals': {
+            'min': 1,
+            'max': 5
+        },
+        'data_signals': {
+            'min': 1,
+            'max': 1
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 32
+        }
+    }
 
     def __init__(self, **kwargs):
         super(DeviceDemux, self).__init__(**kwargs)

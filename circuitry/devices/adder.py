@@ -15,6 +15,24 @@ class DeviceAdd(Device):
     """Adder device"""
     mandatory_signals = ('strobe_signals', 'first_signals', 'second_signals', 'output_signals',)
     truth_table_signals = ('strobe_signals', 'first_signals', 'second_signals', 'output_signals',)
+    constraints = {
+        'strobe_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'first_signals': {
+            'min': 1,
+            'max': 5
+        },
+        'second_signals': {
+            'min': 1,
+            'max': 5
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 7
+        }
+    }
 
     def __init__(self, **kwargs):
         super(DeviceAdd, self).__init__(**kwargs)
@@ -44,6 +62,20 @@ class DeviceInc(Device):
     """Increment device"""
     mandatory_signals = ('strobe_signals', 'data_signals', 'output_signals',)
     truth_table_signals = ('strobe_signals', 'data_signals', 'output_signals',)
+    constraints = {
+        'strobe_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'data_signals': {
+            'min': 1,
+            'max': 5
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 7
+        }
+    }
 
     def __init__(self, **kwargs):
         super(DeviceInc, self).__init__(**kwargs)
@@ -63,6 +95,20 @@ class DeviceDec(Device):
     """Decrement device"""
     mandatory_signals = ('strobe_signals', 'data_signals', 'output_signals',)
     truth_table_signals = ('strobe_signals', 'data_signals', 'output_signals',)
+    constraints = {
+        'strobe_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'data_signals': {
+            'min': 1,
+            'max': 5
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 7
+        }
+    }
 
     def __init__(self, **kwargs):
         super(DeviceDec, self).__init__(**kwargs)
@@ -115,6 +161,20 @@ class DeviceNeg(Device):
     """Negation for two's complement"""
     mandatory_signals = ('strobe_signals', 'data_signals', 'output_signals',)
     truth_table_signals = ('strobe_signals', 'data_signals', 'output_signals',)
+    constraints = {
+        'strobe_signals': {
+            'min': 1,
+            'max': 10
+        },
+        'data_signals': {
+            'min': 1,
+            'max': 5
+        },
+        'output_signals': {
+            'min': 1,
+            'max': 5
+        }
+    }
 
     def __init__(self, **kwargs):
         super(DeviceNeg, self).__init__(**kwargs)
