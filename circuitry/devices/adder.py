@@ -14,6 +14,7 @@ from circuitry.devices.simple import DeviceNot
 class DeviceAdd(Device):
     """Adder device"""
     mandatory_signals = ('strobe_signals', 'first_signals', 'second_signals', 'output_signals',)
+    mandatory_signals_using_subs = ('strobe_signals',)
     truth_table_signals = ('strobe_signals', 'first_signals', 'second_signals', 'output_signals',)
     constraints = {
         'strobe_signals': {
@@ -61,6 +62,7 @@ class DeviceAdd(Device):
 class DeviceInc(Device):
     """Increment device"""
     mandatory_signals = ('strobe_signals', 'data_signals', 'output_signals',)
+    mandatory_signals_using_subs = ('strobe_signals',)
     truth_table_signals = ('strobe_signals', 'data_signals', 'output_signals',)
     constraints = {
         'strobe_signals': {
@@ -94,6 +96,7 @@ class DeviceInc(Device):
 class DeviceDec(Device):
     """Decrement device"""
     mandatory_signals = ('strobe_signals', 'data_signals', 'output_signals',)
+    mandatory_signals_using_subs = ('strobe_signals',)
     truth_table_signals = ('strobe_signals', 'data_signals', 'output_signals',)
     constraints = {
         'strobe_signals': {
@@ -160,6 +163,7 @@ class Device21Comp(DeviceDec):
 class DeviceNeg(Device):
     """Negation for two's complement"""
     mandatory_signals = ('strobe_signals', 'data_signals', 'output_signals',)
+    mandatory_signals_using_subs = ('strobe_signals',)
     truth_table_signals = ('strobe_signals', 'data_signals', 'output_signals',)
     constraints = {
         'strobe_signals': {
