@@ -32,7 +32,7 @@ class GraphAdapter(AbstractAdapter):
                 labels_dict[graph_node] = graph_node
             elif graph_type == 'output':
                 labels_dict[graph_node] = 'output'
-        pyplot.figure(figsize=(8, 8))
+        pyplot.figure(figsize=(6, 4), dpi=100)
         graph_pos = random_layout(graph)
         draw_networkx_nodes(graph, pos=graph_pos, node_size=640)
         draw_networkx_edges(graph, pos=graph_pos, width=0.5, alpha=0.3)

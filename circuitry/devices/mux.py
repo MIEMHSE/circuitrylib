@@ -62,7 +62,8 @@ class DeviceMux(Device):
 class DeviceDemux(Device):
     """Demultiplexer device"""
     mandatory_signals = ('strobe_signals', 'address_signals', 'data_signals', 'output_signals',)
-    mandatory_signals_using_subs = ('strobe_signals',)
+    mandatory_signals_using_subs = ('strobe_signals', 'data_signals', 'output_signals')
+    truth_table_signals = ('strobe_signals', 'address_signals', 'data_signals', 'output_signals',)
     constraints = {
         'strobe_signals': {
             'min': 1,
