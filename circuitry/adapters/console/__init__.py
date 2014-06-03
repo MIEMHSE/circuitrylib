@@ -30,7 +30,7 @@ class ConsoleTruthTableAdapter(AbstractAdapter):
         return ''.join(output_list)
 
 
-class TwosComplementaryConsoleTruthTableAdapter(ConsoleTruthTableAdapter):
+class TwosComplementConsoleTruthTableAdapter(ConsoleTruthTableAdapter):
     def _get_string_line(self, bin_line):
         start_pos = 0
 

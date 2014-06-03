@@ -13,11 +13,13 @@ from circuitry.adapters import AbstractAdapter
 class LatexTruthTableAdapter(AbstractAdapter):
     public_properties = ('latex_columns', 'latex_columns_names', 'latex_table')
 
-    default_method = lambda self: (r'\begin{tabular}{%(latex_columns)s}\\\hline\\%(latex_columns_names)s\\' +
-                                   r'\hline\\%(latex_table)s\hline\\\end{tabular}') % \
-                                  {'latex_columns': self.latex_columns,
-                                   'latex_columns_names': self.latex_columns_names,
-                                   'latex_table': self.latex_table}
+    default_method = lambda self: \
+        (r'\begin{tabular}{%(latex_columns)s}' +
+         r'\\\hline\\%(latex_columns_names)s\\' +
+         r'\hline\\%(latex_table)s\hline\\\end{tabular}') % \
+        {'latex_columns': self.latex_columns,
+         'latex_columns_names': self.latex_columns_names,
+         'latex_table': self.latex_table}
 
     @property
     def latex_columns(self):

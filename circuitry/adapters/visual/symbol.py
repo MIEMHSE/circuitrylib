@@ -24,7 +24,8 @@ class ElectronicSymbolAdapter(AbstractAdapter):
         image = self.image
         large_image = Image.new('RGB', (600, 400), self._options['background'])
         large_image.paste(image,
-                          (300 - self._options['width'] / 2, 200 - self._options['height'] / 2))
+                          (300 - self._options['width'] / 2,
+                           200 - self._options['height'] / 2))
         _, tmpfile = mkstemp(suffix='.png')
         large_image.save(tmpfile)
         return tmpfile

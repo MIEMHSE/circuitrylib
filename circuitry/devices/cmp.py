@@ -12,9 +12,11 @@ from circuitry.devices import Device
 
 class DeviceEq(Device):
     """Equality device"""
-    mandatory_signals = ('strobe_signals', 'first_signals', 'second_signals', 'output_signals',)
+    mandatory_signals = ('strobe_signals', 'first_signals',
+                         'second_signals', 'output_signals',)
     mandatory_signals_using_subs = ('strobe_signals',)
-    truth_table_signals = ('strobe_signals', 'first_signals', 'second_signals', 'output_signals',)
+    truth_table_signals = ('strobe_signals', 'first_signals',
+                           'second_signals', 'output_signals',)
     constraints = {
         'strobe_signals': {
             'min': 1,
