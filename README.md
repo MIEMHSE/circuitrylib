@@ -44,6 +44,8 @@ Check out the latest development version anonymously with:
 The library provides classes for circuitry elements: basic digital logic gates and devices like multiplexers and adders.
 It also supports output to LaTeX. Graphical output is planned.
 
+Web interface named CircuitryLib-web may be found [here](https://github.com/profitware/circuitrylib-web).
+
 *Implemented devices:*
 
 * devices.simple.DeviceNot - NOT logic gate (inverter)
@@ -59,6 +61,17 @@ It also supports output to LaTeX. Graphical output is planned.
 * devices.adder.DeviceNeg - Two's complement negation
 * devices.cmp.DeviceEq - Equality device
 * devices.cmp.DeviceCmp - Digital comparator device
+ 
+*Implemented adapters*
+
+* adapters.console.ConsoleTruthTableAdapter - Simple text truth table output
+* adapters.console.TwosComplementConsoleTruthTableAdapter - Twos' complement truth table
+* adapters.graph.GraphAdapter - Graphs. Default method returns graphical representation
+* adapters.latex.LatexTruthTableAdapter - LaTeX truth table
+* adapters.latex.mux.DeviceMuxLatexTruthTableAdapter - LaTeX truth table for MUX and DEMUX devices
+* adapters.matlab.MatlabAdapter - MATLAB code generation
+* adapters.matlab.extended.ExtendedMatlabAdapter - MATLAB code generation w/ constant sources and sinks
+* adapters.visual.symbol.ElectronicSymbolAdapter - Electronic symbol graphical representation
 
 *Multiplexer example:*
 
