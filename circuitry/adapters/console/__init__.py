@@ -31,6 +31,15 @@ class ConsoleTruthTableAdapter(AbstractAdapter):
 
 
 class TwosComplementConsoleTruthTableAdapter(ConsoleTruthTableAdapter):
+    def default_method(self):
+        min_len = len(self._device.output_signals)
+        for signals_name in self._device.mandatory_signals:
+            if signals_name not in ['output_signals', 'strobe_signals']:
+                if len(self._device[signals_name]) < min_len:
+                    min_len = len(self._device[signals_name])
+        self._options['digits'] = min_len
+        return self.console_table
+
     def _get_string_line(self, bin_line):
         start_pos = 0
 

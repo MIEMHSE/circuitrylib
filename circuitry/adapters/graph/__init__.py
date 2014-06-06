@@ -36,7 +36,8 @@ class GraphAdapter(AbstractAdapter):
         graph_pos = random_layout(graph)
         draw_networkx_nodes(graph, pos=graph_pos, node_size=640)
         draw_networkx_edges(graph, pos=graph_pos, width=0.5, alpha=0.3)
-        draw_networkx_labels(graph, pos=graph_pos, font_size=8, labels=labels_dict)
+        draw_networkx_labels(graph, pos=graph_pos, font_size=8,
+                             labels=labels_dict)
 
         pyplot.xlim(-0.05, 1.05)
         pyplot.ylim(-0.05, 1.05)
