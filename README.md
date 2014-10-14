@@ -52,6 +52,7 @@ Web interface named CircuitryLib-web may be found [here](https://github.com/prof
 * devices.simple.DeviceAnd - AND logic gate (logical conjunction)
 * devices.simple.DeviceOr - OR logic gate (logical disjunction)
 * devices.mux.DeviceMux - MUX (multiplexer)
+* devices.mux.DeviceMuxStrict - Strict multiplexer (sum of data minterms)
 * devices.mux.DeviceDemux - DEMUX (demultiplexer)
 * devices.adder.DeviceAdd - Adder
 * devices.adder.DeviceInc - Increment

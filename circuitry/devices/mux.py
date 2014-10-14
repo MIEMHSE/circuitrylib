@@ -37,11 +37,23 @@ class DeviceMux(Device):
         }
     }
 
+    def _generate_function_in_cycle(self, address_line, i):
+        return Or(self.address_and_data_function, And(
+            SOPform(self.address_signals, [address_line]),
+            self.data_signals[i]
+        ))
+
+    def _generate_function_after_cycle(self, address_and_data_minterms, address_and_data_exludes):
+        return self.address_and_data_function
+
     def __init__(self, **kwargs):
         super(DeviceMux, self).__init__(**kwargs)
         address_and_data_minterms = list()
         address_and_data_exludes = list()
+
         self.truth_table = list()
+        self.address_and_data_function = 0
+
         for i in range(0, 2 ** len(self.address_signals)):
             address_line = list()
             for address_line_value in generate_binary_lines_current(len(self.address_signals), i):
@@ -56,9 +68,21 @@ class DeviceMux(Device):
                 address_and_data_exludes.append(address_line + data_line)
                 y_line = map(lambda _y: 1 - _y, self.output_signals_truth_table)
             self.truth_table.append((self.strobe_signals_truth_table, address_line, data_line, y_line))
-        self.address_and_data_function = SOPform(self.address_signals + self.data_signals,
-                                                 address_and_data_minterms, dontcares=address_and_data_exludes)
+            self.address_and_data_function = self._generate_function_in_cycle(address_line, i)
+
+        self.address_and_data_function = self._generate_function_after_cycle(address_and_data_minterms,
+                                                                              address_and_data_exludes)
         self.functions = [self.strobe_signals_function & self.address_and_data_function]
+
+
+class DeviceMuxStrict(DeviceMux):
+    """Strict multiplexer device"""
+    def _generate_function_in_cycle(self, address_line, i):
+        return self.address_and_data_function
+
+    def _generate_function_after_cycle(self, address_and_data_minterms, address_and_data_exludes):
+        return SOPform(self.address_signals + self.data_signals,
+                       address_and_data_minterms, dontcares=address_and_data_exludes)
 
 
 class DeviceDemux(Device):
